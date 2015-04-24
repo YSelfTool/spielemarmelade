@@ -45,6 +45,7 @@ Graphisch:
  - Seitenleiste des Spielfelds mit Gebäuden
  - Daneben Leiste mit oben baubaren Gebäuden und darunter Infos zum ausgewählten Gebäude
 - Tiles sind 16x16 Pixel
+- Feld ist 60x32 Tiles + je 2 Spalten am Rand
 
 Technisch:
 - Server in Python
