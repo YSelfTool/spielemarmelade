@@ -1,6 +1,7 @@
 Multiplayer Strategiespiel
 **************************
 
+Inhaltlich:
 - Zwei Spieler
 - Ein Spielfeld für beide Spieler
 - Mobspawner spawnen Einheiten
@@ -13,6 +14,7 @@ Multiplayer Strategiespiel
   - Simple: Läuft vorwärts, nach einfachem Muster
   - Komplizierter: Einfaches Pathfinding, einstellbares Muster
  - Einheiten haben Lebenspunkte
+ - Einheiten sieht man immer
 - Es gibt Fallen
  - Werden nur von gegnerischen Einheiten ausgelößt
  - Typen:
@@ -24,6 +26,9 @@ Multiplayer Strategiespiel
   - Equipmentabzug: Nimmt der Einheit Equipment ab (kann man in Gebäude verkaufen)
  - Fallen haben Haltbarkeit (Upgrade für mehr Haltbarkeit)
  - Einheiten nutzen Fallen ab (Upgrade für mehr Abnutzung)
+ - Fallen können nur in einer Umgebung von anderen Fallen gebaut werden
+ - In einer Umgebung von Fallen sieht man gegnerische Fallen
+ - Fallen können nicht auf andere (eigene oder gegnerische) Fallen gebaut werden
 - Wenn eine Einheit die Basis des Gegners erreicht, verliert der Gegner einen Punkt
 - Wenn ein Spieler null Punkte hat, verliert er
 - Ein Spieler hat Credits
@@ -32,3 +37,17 @@ Multiplayer Strategiespiel
  - Schicken von Einheiten steigert festes Einkommen
 - Das Feld besteht aus Tiles
 - Rundenbasiert, automatisiert alle dt ein Tick
+- Startgebäude mit globalen Upgrades
+
+Graphisch:
+- UI:
+ - Spielfeld aus Tiles
+ - Seitenleiste des Spielfelds mit Gebäuden
+ - Daneben Leiste mit oben baubaren Gebäuden und darunter Infos zum ausgewählten Gebäude
+- Tiles sind 16x16 Pixel
+- Feld ist 60x32 Tiles + je 2 Spalten am Rand
+
+Technisch:
+- Server in Python
+- Client in JS
+- Verbinden durch WebSocket
