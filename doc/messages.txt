@@ -1,0 +1,56 @@
+message client->server:
+
+{
+    "action": "get_player_id",
+    "nickname": "$name"
+}
+
+{
+    "action": "place_trap",
+    "player_id": n,
+    "position": [x, y],
+    "trap": {
+        "kind": "pitfall",
+        "upgrades": []
+    }
+}
+
+{
+    "action": "place_spawner",
+    "player_id": n,
+    "position": [x, y],
+    "kind": "$mobname"
+    "spawner": {
+        "pattern": "$patternname"
+    }
+}
+
+{
+    "action": "upgrade_building",
+    "player_id": n,
+    "building_id": m,
+    "new_upgrades": []
+}
+
+{
+    "action": "trigger_spawner",
+    "player_id": n,
+    "spawner_id": m
+}
+
+
+message server->client:
+
+{
+    "action": "get_player_id",
+    "player_id": n
+}
+
+{
+    "action": "full_game_state",
+    "map": {
+
+    }
+}
+
+... TBD
