@@ -1,0 +1,34 @@
+Multiplayer Strategiespiel
+**************************
+
+- Zwei Spieler
+- Ein Spielfeld für beide Spieler
+- Mobspawner spawnen Einheiten
+ - Mobspawner müssen von Hand betätigt werden
+ - Automatisierung durch Upgrade möglich
+- Einheiten laufen über das Spielfeld
+ - Einheiten kollidieren nicht mit Einheiten
+ - Einheiten interagieren mit Fallen des Gegners
+ - Man kann Einheiten upgraden / Es gibt unterschiedliche Typen von Einheiten
+  - Simple: Läuft vorwärts, nach einfachem Muster
+  - Komplizierter: Einfaches Pathfinding, einstellbares Muster
+ - Einheiten haben Lebenspunkte
+- Es gibt Fallen
+ - Werden nur von gegnerischen Einheiten ausgelößt
+ - Typen:
+  - Fallgrube: Ist nach n Monstern voll, verschwindet danach (Unsichtbar per Upgrade)
+  - Stacheln: Machen Schaden
+  - Katapult: Wirft Einheit n Felder zurück
+  - Giftfalle: damage over time
+  - (Optional) Effektfalle (Monster wird langsamer, Pattern invertiert, ...)
+  - Equipmentabzug: Nimmt der Einheit Equipment ab (kann man in Gebäude verkaufen)
+ - Fallen haben Haltbarkeit (Upgrade für mehr Haltbarkeit)
+ - Einheiten nutzen Fallen ab (Upgrade für mehr Abnutzung)
+- Wenn eine Einheit die Basis des Gegners erreicht, verliert der Gegner einen Punkt
+- Wenn ein Spieler null Punkte hat, verliert er
+- Ein Spieler hat Credits
+ - Festes Einkommen (pro Zeit)
+ - Einkommen durch Verkauf von gelootetem Equipment (evtl: Einheiten, die durchgekommen sind, werden gelootet)
+ - Schicken von Einheiten steigert festes Einkommen
+- Das Feld besteht aus Tiles
+- Rundenbasiert, automatisiert alle dt ein Tick
