@@ -99,7 +99,9 @@ class GameState(object):
                 logger.warning("Unknown action %s in action buffer, ignoring.", action)
                 continue
 
-        self.send_state_delta()
+        self.move_units()
+        self.apply_field_effects()
+        self.send_state_delta(old_state)
 
     # initial state
     def send_full_state(self):
@@ -112,7 +114,7 @@ class GameState(object):
         })
 
     # changes after each tick
-    def send_state_delta(self):
+    def send_state_delta(self, old_state):
         pass
 
     def handle_message(self, msg, player):
@@ -126,7 +128,6 @@ class GameState(object):
             logger.debug("Placing message from player %s in buffer for next tick", player.name)
             self.action_buffer.append((msg, player))
         return ok
-
 
     def get_next_unit_id(self):
         tmp = self.unit_id_counter
@@ -149,3 +150,40 @@ class GameState(object):
         json_str = json.dumps(data)
         asyncio.async(self.game.player1.socket.send(json_str))
         asyncio.async(self.game.player2.socket.send(json_str))
+
+    def move_units(self):
+        for unit in self.units:
+            if unit.may_move():
+                (x, y) = unit.get_next_position()
+                (ox, oy) = unit.position
+                if (1 <= x < MAP_SIZE_X-1) and (0 <= y < MAP_SIZE_Y):
+                    unit.set_new_position([x, y])
+                if y == -1:
+                    y += MAP_SIZE_Y
+                    unit.set_new_position([x, y])
+                elif y == MAP_SIZE_Y:
+                    y -= MAP_SIZE_Y
+                    unit.set_new_position([x, y])
+
+    def apply_field_effects(self):
+        for unit in self.units:
+            (x,y) = unit.position
+            if unit.player == self.game.player1.id:
+                if x == 1:
+                    self.game.player1.add_money(unit.bounty)
+                    self.game.player1.lose_health_points()
+                    self.units.remove(unit)
+            elif unit.player == self.game.player2.id:
+                if x == MAP_SIZE_X-2:
+                    self.game.player2.add_money(unit.bounty)
+                    self.game.player2.lose_health_points()
+                    self.units.remove(unit)
+            else:
+                trap = self.map[x][y]
+                if trap is not None:
+                    trap.handleUnit(unit)
+                    if unit.hp <= 0:
+                        self.units.remove(unit)
+                    if trap.has_durability and trap.durability <= 0:
+                        self.traps.remove(trap)
+                        self.map[x][y] = None    

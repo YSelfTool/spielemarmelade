@@ -120,6 +120,7 @@ trap:
     "upgrades": [ ],
     "kind": kind,
     "durability": durability,
+    "has_durability": True, // kann kaputt gehen
 }
 
 building:

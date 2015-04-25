@@ -2,12 +2,13 @@ TRAP_PITFALL = 0
 
 
 class Trap(object):
-    def __init__(self, trap_id, owner, position, durability):
+    def __init__(self, trap_id, owner, position, durability, has_durability):
         self.trap_id = trap_id
         self.owner = owner
         self.position = position
         self.upgrades = []
         self.durability = durability
+        self.has_durability = has_durability
 
     def to_dict(self):
         return {
@@ -20,6 +21,9 @@ class Trap(object):
 
     def copy(self):
         return Trap(self.trap_id, self.owner, self.position, self.durability)
+
+    def handle_unit(self, unit):
+        pass
 
 class PitfallTrap(Trap):
     def __init__(self, owner, position, capacity):
