@@ -9,7 +9,7 @@ function Network(endpoint, protocol, executors) {
 Network.prototype.connect = function() {
     this.socket = new WebSocket(this.endpoint, this.protocol);
     this.socket.network = this;
-    this.socket.onopen = function(event) {
+    this.socket.onopen = function(e) {
         console.log("Connection open");
         this.network.status = true;
         while (this.network.buffer.length > 0) {
@@ -17,21 +17,19 @@ Network.prototype.connect = function() {
             this.network.buffer = this.network.buffer.slice(1);
         }
     };
-    this.socket.onerror = function(event) {
-        console.log(["error", event]);
+    this.socket.onerror = function(e) {
+        console.log(["error", e]);
     };
-    this.socket.onclose = function(event) {
-        console.log(["close", event]);
+    this.socket.onclose = function(e) {
+        console.log(["close", e]);
     };
-    this.socket.onmessage = function(event) {
-        console.log(event);
+    this.socket.onmessage = function(e) {
+        console.log(e);
         //this.parse(event);
     };
 };
 Network.prototype.send = function(data) {
     if (this.status) {
-        console.log(data);
-        console.log(JSON.stringify(data));
         this.socket.send(JSON.stringify(data));
     } else {
         console.log(this);
@@ -45,4 +43,9 @@ Network.prototype.parse = function(message) {
 Network.prototype.setName = function(name) {
     msg = { "action": "set_name", "nickname": name };
     this.send(msg);
+};
+Network.prototype.quit = function() {
+    msg = { "action": "quit" };
+    this.send(msg);
+    this.socket.close();
 };
