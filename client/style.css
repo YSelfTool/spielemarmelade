@@ -1,0 +1,28 @@
+body {
+    background-color: lightgray;
+}
+
+#main {
+    text-align: center;
+}
+
+.header {
+    display: inline-block;
+}
+
+.central div {
+    display: inline-block;
+}
+
+.overlay {
+    position: absolute;
+    background-color: lightblue;
+    border: 1px solid black;
+    border-radius: 3px;
+    margin: 2px;
+    padding: 2px;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+

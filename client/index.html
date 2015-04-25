@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+    <head>
+        <title>SMSP - Spielemarmelade Strategiespiel</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="style.css" />
+        <script src="script.js" async></script>
+        <script src="imageloader.js" async></script>
+        <script src="network.js" async></script>
+    </head>
+    <body>
+        <div id="main">
+            <div id="login-div" class="overlay">
+                Name auswählen:<br>
+                <input type="text" id="login-name" placeholder="Name"></input>
+                <button id="login-button">Login</button>
+            </div>
+           <div id="header" class="header">
+                Header
+            </div>
+            <div id="central" class="central">
+                <div id="game">
+                    <canvas id="canvas" width="1024" height="512"></canvas>
+                </div>
+                <div id="side">
+                    Seitenleiste
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

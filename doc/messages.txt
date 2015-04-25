@@ -73,8 +73,44 @@ message server->client:
 {
     "action": "full_game_state",
     "map": {
-
+        size: [x, y],
+        units: [ unit, unit, ... ],
+        traps: [ trap, trap, ... ],
+        buildings: [ building, building, ...]
     }
+}
+
+dataformats:
+
+unit:
+{
+    "id": id,
+    "mine": true/false,
+    "position": [x, y],
+    "kind": kind,
+    "upgrades": [ ],
+    "life": life,
+    "equipment": equipment,
+    "wearout": wearout // abnutzung
+}
+
+trap:
+{
+    "id": id,
+    "mine": true/false,
+    "position": [x, y],
+    "upgrades": [ ],
+    "kind": kind,
+    "durability": durability,
+    "invisible": invisible
+}
+
+building:
+{
+    "id": id,
+    "mine": true/false,
+    "position": y,
+    "kind": kind
 }
 
 ... TBD

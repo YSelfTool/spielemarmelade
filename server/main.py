@@ -103,7 +103,6 @@ def handle_message(websocket, path):
         else:
             logger.error("Unknown action {} ", str(action))
 
-
 start_server = websockets.serve(handle_message, '', 8765)
 
 if __name__ == "__main__":
