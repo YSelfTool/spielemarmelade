@@ -19,6 +19,9 @@ class Building(object):
             "upgrades": self.upgrades
         }
 
+    def copy(self):
+        Building(self.building_id, self.size, self.owner, self.position) 
+
 class Headquaters(Building):
     def __init__(self, owner, position):
         super().__init__(BUILDING_HQ, (1, 4), owner, position)

@@ -8,6 +8,8 @@ class Player(object):
         self.player_id = player_id
         self.token = token
         self.socket = socket
+        self.money = 0
+        self.health_points = 20
         pass
 
     def __repr__(self):
