@@ -45,14 +45,7 @@ function quit() {
     state = "stopped";
 }
 
-function startGame() {
-    document.getElementById("lobby-div").style.display = "none";
-    state = "running";
-    draw();
-}
-
 function serverErrorHandler(data) {
-    console.log(data.message);
     if (!data.can_continue) {
         quit();
     }
@@ -64,7 +57,7 @@ function serverErrorHandler(data) {
             document.getElementById("lobby-div").style.display = "none";
             state = "starting";
         } else if (data.error_code == GAME_WITH_NAME_ALREADY_RUNNING) {
-            document.getElementById("lobby-message").innerHTML = "Ein Spiel mit dem Namen läuft bereits.";
+            document.getElementById("lobby-message").innerHTML = data.message;
             state = "loggedin";
         }
     }
@@ -74,8 +67,13 @@ function setPlayerIdHandler(data) {
     player.id = data.id;
 }
 
-function startGameHandler(data) {
-    enemy = new Player(data["enemy"][0], data["enemy"][1]);
+function gameStartHandler(data) {
+    if (state == "lobby" || state == "queued") {
+        enemy = new Player(data["enemy"][0], data["enemy"][1]);
+        document.getElementById("lobby-div").style.display = "none";
+        state = "running";
+        draw();
+    }
 }
 
 function gameQueuedHandler(data) {
@@ -97,7 +95,8 @@ window.onload=function() {
             "full_game_state": readFullGameState, 
             "error": serverErrorHandler,
             "set_player_id": setPlayerIdHandler,
-            "game_queued": gameQueuedHandler
+            "game_queued": gameQueuedHandler,
+            "game_started": gameStartHandler
         };
     // ws://134.61.40.201:8765/game
     network = new Network("ws://134.61.40.201:8765/game", "trapstrat", executors);
