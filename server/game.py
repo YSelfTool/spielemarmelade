@@ -55,21 +55,19 @@ class GameState(object):
         self.unit_id_counter += 1
         return tmp
 
-<<<<<<< HEAD
     def save_game_state(self):
         money1 = self.game.player1.money
         hp1 = self.game.player1.health_points
         money2 = self.game.player2.money
         hp1 = self.game.player2.health_points
         return {
-            "units": [self.units.copy(),
-            "traps": self.traps.copy(),
-            "buildings": self.buildings.copy()
+            "units": [unit.copy() for unit in self.units],
+            "traps": [trap.copy() for trap in self.traps],
+            "buildings": [building.copy() for building in self.buildings]
             "players": ["player1": (hp1, money1),"player2": (hp2, money2)]
         }
-=======
+
     def do_send_data(self, data):
         json_str = json.dumps(data)
         self.game.player1.socket.send(json_str)
         self.game.player2.socket.send(json_str)
->>>>>>> e107e19f31ccc91834d7eb062c0e72e30491485a
