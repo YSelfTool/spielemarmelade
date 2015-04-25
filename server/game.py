@@ -1,4 +1,5 @@
 import json
+import asyncio
 import logging
 logger = logging.getLogger(__name__)
 
@@ -28,18 +29,41 @@ class GameState(object):
         self.action_buffer = []
         self.spawn_headquaters()
 
-    def place_building_in_map(self, building):
+    def get_building_bounds(self, building):
         building_x_start = building.position[0]
         building_x_stop = building_x_start+building.size[0]
         building_y_start = building.position[1]
         building_y_stop = building_y_start+building.size[1]
 
-        for x in range(building_x_start, building_x_stop):
-            for y in range(building_y_start, building_y_stop):
+        return building_x_start, building_x_stop, building_y_start, building_y_stop
+
+    def get_building_bounds_at_position(self, building, position):
+        building_x_start = position[0]
+        building_x_stop = building_x_start+building.size[0]
+        building_y_start = position[1]
+        building_y_stop = building_y_start+building.size[1]
+
+        return building_x_start, building_x_stop, building_y_start, building_y_stop
+
+    def place_building_in_map(self, building):
+        (x1, x2, y1, y2) = self.get_building_bounds(building)
+
+        for x in range(x1, x2):
+            for y in range(y1, y2):
                 self.map[x][y] = building
 
     def can_place_building_at(self, building, position):
-        return True # TODO: Actually implement this
+        (x1, x2, y1, y2) = self.get_building_bounds_at_position(building, position)
+
+        can_place = True
+        for x in range(x1, x2):
+            for y in range(y1, y2):
+                if self.map[x][y] is not None:
+                    can_place = False
+                    break
+            if not can_place:
+                break
+        return can_place
 
     def spawn_headquaters(self):
         hq_player1 = buildings.Headquaters(self.game.player1.player_id, (0, int(MAP_SIZE_Y/2-2)))
@@ -52,14 +76,14 @@ class GameState(object):
 
     # after each round
     def tick(self):
-        old_state = save_game_state() 
+        old_state = self.save_game_state()
         the_actions = self.action_buffer.copy()
         self.action_buffer = []
         move_units()
+        apply_field_effects()
         self.send_state_delta(old_state)
 
-
-    #beginning state
+    # initial state
     def send_full_state(self):
         self.do_send_data({
             "action": "full_game_state",
@@ -85,18 +109,18 @@ class GameState(object):
         money1 = self.game.player1.money
         hp1 = self.game.player1.health_points
         money2 = self.game.player2.money
-        hp1 = self.game.player2.health_points
+        hp2 = self.game.player2.health_points
         return {
             "units": [unit.copy() for unit in self.units],
             "traps": [trap.copy() for trap in self.traps],
             "buildings": [building.copy() for building in self.buildings],
-            "players": {"player1": (hp1, money1),"player2": (hp2, money2)}
+            "players": {"player1": (hp1, money1), "player2": (hp2, money2)}
         }
 
     def do_send_data(self, data):
         json_str = json.dumps(data)
-        self.game.player1.socket.send(json_str)
-        self.game.player2.socket.send(json_str)
+        asyncio.async(self.game.player1.socket.send(json_str))
+        asyncio.async(self.game.player2.socket.send(json_str))
 
     def move_units(self):
         for unit in self.units:
@@ -104,34 +128,33 @@ class GameState(object):
                 (x, y) = unit.get_next_position()
                 (ox, oy) = unit.position
                 if (1 <= x < MAP_SIZE_X-1 and 0 <= y < MAP_SIZE_Y):
-                    set_new_position([x,y])
+                    unit.set_new_position([x,y])
                 if (y == -1):
                     y += MAP_SIZE_Y
-                    set_new_position([x,y])
+                    unit.set_new_position([x,y])
                 elif (y == MAP_SIZE_Y):
                     y -= MAP_SIZE_Y
-                    set_new_position([x,y])
+                    unit.set_new_position([x,y])
 
     def apply_field_effects(self):
-        for unit in self.unit:
+        for unit in self.units:
             (x,y) = unit.position
-            if (unit.player == game.player1.id):
+            if (unit.player == self.game.player1.id):
                 if (x == 1):
-                    game.player1.add_money(unit.bounty)
-                    game.player1.lose_health_points()
-                    units.remove(unit)
-            elif (unit.player == game.player2.id):
+                    self.game.player1.add_money(unit.bounty)
+                    self.game.player1.lose_health_points()
+                    self.units.remove(unit)
+            elif (unit.player == self.game.player2.id):
                 if (x == MAP_SIZE_X-2):
-                    game.player2.add_money(unit.bounty)
-                    game.player2.lose_health_points()
+                    self.game.player2.add_money(unit.bounty)
+                    self.game.player2.lose_health_points()
                     units.remove(unit)
             else:
-                trap = map[x][y]
+                trap = self.map[x][y]
                 if  (trap is not None):
                     trap.handleUnit(unit)
                     if (unit.hp <= 0):
-                        units.remove(unit)
+                        self.units.remove(unit)
                     if (trap.has_durability and trap.durability <= 0)
-                        traps.remove(trap)
-                        map[x][y] = None    
-
+                        self.traps.remove(trap)
+                        self.map[x][y] = None    

@@ -2,10 +2,13 @@
 function Building(img, player, pos, size, kind) {
     this.img = img;
     this.player = player;
-    this.position = new Position(pos[0], pos[1]);
-    this.size = new Position(size[0], size[1]);
+    this.position = pos;
+    this.size = size;
 }
 
-function BuildingImage(imgloader, building) {
-    return imgloader.get("tile-yellow");
+function BuildingImage(imgloader, kind) {
+    if (kind == BUILDING_CASTLE)
+        return imgloader.get("castle");
+    else
+        return imgloader.get("tile-yellow");
 }

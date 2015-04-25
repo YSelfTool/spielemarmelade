@@ -1,4 +1,5 @@
-UNIT_SOLIDER = 1
+UNIT_SOLIDER = 0
+
 
 class Unit(object):
     def __init__(self, unit_id, owner, position, upgrades, hp, bounty, trap_wear):
@@ -22,7 +23,7 @@ class Unit(object):
         }
 
     def copy(self):
-        return Unit(self.unit_id, self.owner, self.position.copy(), self.upgrades, self.hp, self.bounty, self.trap_wear)
+        return Unit(self.unit_id, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear)
 
     def get_next_position(self):
         return None
