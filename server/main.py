@@ -133,12 +133,12 @@ def simulate_game(the_game):
     if player1_still_here:
         player_id_to_game.pop(the_game.player1.player_id)
     elif player2_still_here:
-        asyncio.async(send_error_message(the_game.player2.socket, "Der andere Spieler hat das Spiel verlassen", error_codes.GAME_OVER_PLAYER_QUIT, False))
+        asyncio.async(send_error_message(the_game.player2.socket, "Der andere Spieler hat das Spiel verlassen", error_codes. GAME_OVER_PLAYER_QUIT, False))
 
     if player2_still_here:
         player_id_to_game.pop(the_game.player2.player_id)
     elif player1_still_here:
-        asyncio.async(send_error_message(the_game.player1.socket, "Der andere Spieler hat das Spiel verlassen", error_codes.GAME_OVER_PLAYER_QUIT, False))
+        asyncio.async(send_error_message(the_game.player1.socket, "Der andere Spieler hat das Spiel verlassen", error_codes. GAME_OVER_PLAYER_QUIT, False))
 
 
 def handle_game_message(the_game, msg):
@@ -159,7 +159,7 @@ def handle_message(websocket, path):
             running = False
             if the_player is not None:
                 players.pop(the_player.name)
-                the_game = player_id_to_game[the_player.player_id]
+                the_game = (player_id_to_game[the_player.player_id] or None)
                 if the_game is not None:
                     the_game.running = False
                     player_id_to_game.pop(the_player.player_id)

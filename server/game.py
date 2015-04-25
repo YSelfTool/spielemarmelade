@@ -1,4 +1,5 @@
 import json
+import asyncio
 import logging
 logger = logging.getLogger(__name__)
 
@@ -80,5 +81,5 @@ class GameState(object):
 
     def do_send_data(self, data):
         json_str = json.dumps(data)
-        self.game.player1.socket.send(json_str)
-        self.game.player2.socket.send(json_str)
+        asyncio.async(self.game.player1.socket.send(json_str))
+        asyncio.async(self.game.player2.socket.send(json_str))
