@@ -64,6 +64,11 @@ message server->client:
 }
 
 {
+    "action": set_player_id",
+    "id": n
+}
+
+{
     "action": "error",
     "message": "$errormessage",
     "can_continue": true/false,
@@ -104,6 +109,7 @@ trap:
 {
     "id": id,
     "player": id,
+
     "position": [x, y],
     "upgrades": [ ],
     "kind": kind,
