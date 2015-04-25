@@ -18,6 +18,8 @@ class Trap(object):
             "durability": self.durability
         }
 
+    def copy(self):
+        return Trap(self.trap_id, self.owner, self.position, self.durability)
 
 class PitfallTrap(Trap):
     def __init__(self, owner, position, capacity):

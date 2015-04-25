@@ -21,6 +21,9 @@ class Unit(object):
             "wear": self.trap_wear
         }
 
+    def copy(self):
+        return Unit(self.unit_id, self.owner, self.position.copy(), self.upgrades, self.hp, self.bounty, self.trap_wear)
+
 class UnitSolider(Unit):
     def __init__(self, owner, position, upgrades):
         super().__init__(UNIT_SOLIDER, owner, position, upgrades, 10, 20, 1)
