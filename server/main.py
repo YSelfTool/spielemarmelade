@@ -123,7 +123,7 @@ def simulate_game(the_game):
     logger.info("Now simulating the game name %s", the_game.name)
     the_game.state.send_full_state()
     while the_game.running:
-        logger.debug("Updating game named %s", the_game.name)
+        #logger.debug("Updating game named %s", the_game.name)
         the_game.state.tick()
         the_game.state.send_state_delta()
         yield from asyncio.sleep(0.5)
@@ -142,10 +142,6 @@ def simulate_game(the_game):
         asyncio.async(send_error_message(the_game.player1.socket, "Der andere Spieler hat das Spiel verlassen", error_codes. GAME_OVER_PLAYER_QUIT, False))
 
     running_games.pop(the_game.name)
-
-
-def handle_game_message(the_game, msg):
-    return the_game.state.handle_message(msg)
 
 
 @asyncio.coroutine
@@ -197,9 +193,18 @@ def handle_message(websocket, path):
         elif action == "join_game":
             handle_join_game(msg, websocket, the_player)
         else:
-            the_game = player_id_to_game[the_player]
-            if (the_game is not None) and (handle_game_message(the_game, msg)):
-                pass
+            if the_player.player_id in player_id_to_game:
+                the_game = player_id_to_game[the_player.player_id]
+                #logger.debug("Player %s has a game named %s", the_player.name, the_game.name)
+                if the_game is not None:
+                    if the_game.state.handle_message(msg, the_player):
+                        #logger.info("The game handled action %s for player %s", msg["action"], the_player.name)
+                        pass
+                    #else:
+                        #logger.error("Game %s for player %s did not handle action %s", the_game.name, the_player.name, msg["action"])
+                #else:
+                    #logger.error("There is no game for the player name %s", the_player.name)
+
             else:
                 logger.error("Unknown action {} ", str(action))
 

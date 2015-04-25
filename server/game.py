@@ -2,6 +2,7 @@ import json
 import asyncio
 import logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 import buildings
 
@@ -74,11 +75,29 @@ class GameState(object):
         self.place_building_in_map(hq_player1)
         self.place_building_in_map(hq_player2)
 
+    def spawn_spawner(self, msg, player):
+        (x, y) = msg["position"]
+        kind = msg["kind"]
+        owner = player.player_id
+        spawner = buildings.Spawner(owner, (x, y), kind)
+        if self.can_place_building_at(spawner, (x, y)):
+            logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
+            self.place_building_in_map(spawner)
+            self.buildings.append(spawner)
+
     # after each round
     def tick(self):
         old_state = self.save_game_state()
         the_actions = self.action_buffer.copy()
         self.action_buffer = []
+
+        for (msg, player) in the_actions:
+            action = msg["action"]
+            if action == "place_spawner":
+                self.spawn_spawner(msg, player)
+            else:
+                logger.warning("Unknown action %s in action buffer, ignoring.", action)
+                continue
 
         self.send_state_delta()
 
@@ -96,8 +115,18 @@ class GameState(object):
     def send_state_delta(self):
         pass
 
-    def handle_message(self, msg):
-        self.action_buffer.append(msg)
+    def handle_message(self, msg, player):
+        ok = False
+        action = msg["action"]
+        logger.debug("Handeling message with action %s for player %s ", action, player.name)
+        if action == "place_spawner":
+            ok = True
+
+        if ok:
+            logger.debug("Placing message from player %s in buffer for next tick", player.name)
+            self.action_buffer.append((msg, player))
+        return ok
+
 
     def get_next_unit_id(self):
         tmp = self.unit_id_counter
