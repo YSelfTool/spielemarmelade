@@ -23,7 +23,7 @@ class Unit(object):
         }
 
     def copy(self):
-        return Unit(self.unit_id, self.owner, self.position.copy(), self.upgrades, self.hp, self.bounty, self.trap_wear)
+        return Unit(self.unit_id, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear)
 
 class UnitSolider(Unit):
     def __init__(self, owner, position, upgrades):
