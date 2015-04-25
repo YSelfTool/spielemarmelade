@@ -91,7 +91,7 @@ player:
 unit:
 {
     "id": id,
-    "mine": true/false,
+    "player": id,
     "position": [x, y],
     "kind": kind,
     "upgrades": [ ],
@@ -103,7 +103,7 @@ unit:
 trap:
 {
     "id": id,
-    "mine": true/false,
+    "player": id,
     "position": [x, y],
     "upgrades": [ ],
     "kind": kind,
@@ -114,7 +114,7 @@ trap:
 building:
 {
     "id": id,
-    "mine": true/false,
+    "player": id,
     "position": y,
     "kind": kind
 }
