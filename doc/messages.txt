@@ -92,6 +92,11 @@ message server->client:
     }
 }
 
+{
+    "action": "set_unit_id",
+    "id": n
+}
+
 dataformats:
 
 player: 
