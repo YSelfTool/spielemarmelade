@@ -59,6 +59,12 @@ message server->client:
 
 dataformats:
 
+player: 
+{
+    id: id,
+    name: name
+}
+
 unit:
 {
     "id": id,
