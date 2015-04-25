@@ -23,21 +23,29 @@ class GameState(object):
         self.traps = []
         self.buildings = []
         self.unit_id_counter = 1
+        self.action_buffer = []
 
     # after each round
     def tick(self):
-        pass
+        temp = self.actionbuffer
+        action_buffer = {}
+
 
     #beginning state
     def send_full_state(self):
-        pass
+        return {
+            "size": [MAP_SIZE_X, MAP_SIZE_Y],
+            "units": [unit.to_dict() for unit in self.units],
+            "traps": [trap.to_dict() for trap in self.traps],
+            "buildings": [buildings.to_dict() for building in self.buildings]
+        }
 
-    #changes after each
+    #changes after each tick
     def send_state_delta(self):
         pass
 
     def handle_message(self, msg):
-        pass
+        self.action_buffer.append(msg)
 
     def get_next_unit_id(self):
         tmp = self.unit_id_counter
