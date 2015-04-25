@@ -72,8 +72,8 @@ message server->client:
 {
     "action": "game_start",
     "enemy": {
-        enemy_player_id,
-        enemy_player_name
+        enemy_player_id: $enemy_player_id,
+        enemy_player_name: $enemy_player_name
     } 
 }
 
