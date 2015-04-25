@@ -114,7 +114,8 @@ building:
 {
     "id": id,
     "player": id,
-    "position": y,
+    "position": [x, y],
+    "size": [x, y],
     "kind": kind
 }
 
