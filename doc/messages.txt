@@ -65,7 +65,7 @@ message server->client:
 
 {
     "action": set_player_id",
-    "player_id": n
+    "id": n
 }
 
 {
@@ -87,10 +87,16 @@ message server->client:
 
 dataformats:
 
+player: 
+{
+    id: id,
+    name: name
+}
+
 unit:
 {
     "id": id,
-    "player_id": n,
+    "player": id,
     "position": [x, y],
     "kind": kind,
     "upgrades": [ ],
@@ -102,18 +108,18 @@ unit:
 trap:
 {
     "id": id,
-    "player_id": n,
+    "player": id,
+
     "position": [x, y],
     "upgrades": [ ],
     "kind": kind,
     "durability": durability,
-    "invisible": invisible
 }
 
 building:
 {
     "id": id,
-    "player_id": n,
+    "player": id,
     "position": y,
     "kind": kind
 }

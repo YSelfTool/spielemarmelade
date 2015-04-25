@@ -60,7 +60,7 @@ def handle_set_name(msg, socket, token):
 
 
 def send_player_id(socket, player):
-    data = {"action": "set_player_id", "player_id": player.player_id}
+    data = {"action": "set_player_id", "id": player.player_id}
     yield from socket.send(data)
 
 
