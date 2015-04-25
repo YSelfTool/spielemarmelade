@@ -81,19 +81,17 @@ def handle_join_game(msg, socket, player):
     elif game_name in waiting_games:
         logger.info("Player %s joining waiting game %s", player.name, game_name)
         the_game = waiting_games[game_name]
-        the_game.player2 = player.player_id
+        the_game.player2 = player
         the_game.running = True
         running_games[game_name] = the_game
         waiting_games.pop(game_name)
-        the_player1 = [ply for ply in players.values() if ply.player_id == the_game.player1][0]
-        the_player2 = [ply for ply in players.values() if ply.player_id == the_game.player2][0]
-        logger.info("Staring game %s with %s and %s", the_game.name, the_player1.name, the_player2.name)
-        asyncio.async(send_game_started(the_player1.socket, the_player2))
-        asyncio.async(send_game_started(the_player2.socket, the_player1))
+        logger.info("Staring game %s with %s and %s", the_game.name, the_game.player1.name, the_game.player2.name)
+        asyncio.async(send_game_started(the_game.player1.socket, the_game.player2))
+        asyncio.async(send_game_started(the_game.player2.socket, the_game.player1))
     else:
         logger.info("Player %s started a new game called %s", player.name, game_name)
         the_game = game.Game(game_name)
-        the_game.player1 = player.player_id
+        the_game.player1 = player
         waiting_games[game_name] = the_game
         asyncio.async(send_game_queued(socket, game_name))
 
