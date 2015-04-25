@@ -35,3 +35,19 @@ body {
     color: darkgreen;
     font-size: 12px;
 }
+
+.side div {
+    display: block;
+}
+
+.side {
+    vertical-align: top;
+}
+
+.known-buildings-div div {
+    
+}
+
+.infospace {
+    /*border: 1px solid black;*/
+}
