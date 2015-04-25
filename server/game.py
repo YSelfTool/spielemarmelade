@@ -95,7 +95,15 @@ class GameState(object):
 
     # changes after each tick
     def send_state_delta(self, old_state):
-        pass
+        new_units = []
+        deleted_units = []
+        changed_units = []
+        new_traps = []
+        deleted_traps = []
+        changed_traps = []
+        new_buildings = []
+        deleted_buildings = []
+        changed_buildings = []
 
     def handle_message(self, msg):
         self.action_buffer.append(msg)
