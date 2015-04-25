@@ -23,7 +23,7 @@ players = {}
 player_id_counter = 1
 waiting_games = {}
 running_games = {}
-player_to_game = {}
+player_id_to_game = {}
 
 
 def get_next_player_id():
@@ -90,8 +90,8 @@ def handle_join_game(msg, socket, player):
         logger.info("Staring game %s with %s and %s", the_game.name, the_game.player1.name, the_game.player2.name)
         asyncio.async(send_game_started(the_game.player1.socket, the_game.player2))
         asyncio.async(send_game_started(the_game.player2.socket, the_game.player1))
-        player_to_game[the_game.player1.player_id] = the_game
-        player_to_game[the_game.player2.player_id] = the_game
+        player_id_to_game[the_game.player1.player_id] = the_game
+        player_id_to_game[the_game.player2.player_id] = the_game
         the_game_state = game.GameState(the_game)
         the_game.state = the_game_state
         asyncio.async(simulate_game(the_game))
@@ -127,8 +127,18 @@ def simulate_game(the_game):
         the_game.state.send_state_delta()
         yield from asyncio.sleep(0.5)
     logger.info("The game named %s is done", the_game.name)
-    player_to_game.pop(the_game.player1)
-    player_to_game.pop(the_game.player2)
+    player1_still_here = the_game.player1.player_id in player_id_to_game
+    player2_still_here = the_game.player2.player_id in player_id_to_game
+    logger.info("Player 1 is still here: %s, Player 2 is still here: %s", player1_still_here, player2_still_here)
+    if player1_still_here:
+        player_id_to_game.pop(the_game.player1.player_id)
+    elif player2_still_here:
+        asyncio.async(send_error_message(the_game.player2.socket, "Der andere Spieler hat das Spiel verlassen", error_codes.GAME_OVER_PLAYER_QUIT, False))
+
+    if player2_still_here:
+        player_id_to_game.pop(the_game.player2.player_id)
+    elif player1_still_here:
+        asyncio.async(send_error_message(the_game.player1.socket, "Der andere Spieler hat das Spiel verlassen", error_codes.GAME_OVER_PLAYER_QUIT, False))
 
 
 def handle_game_message(the_game, msg):
@@ -149,9 +159,10 @@ def handle_message(websocket, path):
             running = False
             if the_player is not None:
                 players.pop(the_player.name)
-                the_game = player_to_game[the_player.player_id]
+                the_game = player_id_to_game[the_player.player_id]
                 if the_game is not None:
                     the_game.running = False
+                    player_id_to_game.pop(the_player.player_id)
             continue
         try:
             msg = json.loads(msg_str)
@@ -178,7 +189,7 @@ def handle_message(websocket, path):
         elif action == "join_game":
             handle_join_game(msg, websocket, the_player)
         else:
-            the_game = player_to_game[the_player]
+            the_game = player_id_to_game[the_player]
             if (the_game is not None) and (handle_game_message(the_game, msg)):
                 pass
             else:
@@ -187,6 +198,6 @@ def handle_message(websocket, path):
 start_server = websockets.serve(handle_message, '', 8765)
 
 if __name__ == "__main__":
-    logger.info("Go, go, go!")
+    logger.info("Server loaded and ready to rock!")
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_forever()
