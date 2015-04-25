@@ -70,7 +70,8 @@ message server->client:
 }
 
 {
-    "action": "game_queued"
+    "action": "game_queued",
+    "game_name": $game_name
 }
 
 {
