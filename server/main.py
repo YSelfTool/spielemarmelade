@@ -100,6 +100,7 @@ def handle_join_game(msg, socket, player):
         the_game = game.Game(game_name)
         the_game.player1 = player
         waiting_games[game_name] = the_game
+        player_id_to_game[the_game.player1.player_id] = the_game
         asyncio.async(send_game_queued(socket, game_name))
 
 
@@ -133,12 +134,12 @@ def simulate_game(the_game):
     if player1_still_here:
         player_id_to_game.pop(the_game.player1.player_id)
     elif player2_still_here:
-        asyncio.async(send_error_message(the_game.player2.socket, "Der andere Spieler hat das Spiel verlassen", error_codes.GAME_OVER_PLAYER_QUIT, False))
+        asyncio.async(send_error_message(the_game.player2.socket, "Der andere Spieler hat das Spiel verlassen", error_codes. GAME_OVER_PLAYER_QUIT, False))
 
     if player2_still_here:
         player_id_to_game.pop(the_game.player2.player_id)
     elif player1_still_here:
-        asyncio.async(send_error_message(the_game.player1.socket, "Der andere Spieler hat das Spiel verlassen", error_codes.GAME_OVER_PLAYER_QUIT, False))
+        asyncio.async(send_error_message(the_game.player1.socket, "Der andere Spieler hat das Spiel verlassen", error_codes. GAME_OVER_PLAYER_QUIT, False))
 
 
 def handle_game_message(the_game, msg):
@@ -158,11 +159,16 @@ def handle_message(websocket, path):
         if msg_str is None:
             running = False
             if the_player is not None:
+                logger.info("Player %s disconnected...", the_player.name)
                 players.pop(the_player.name)
-                the_game = player_id_to_game[the_player.player_id]
-                if the_game is not None:
-                    the_game.running = False
+                if the_player.player_id in player_id_to_game:
+                    the_game = player_id_to_game[the_player.player_id]
                     player_id_to_game.pop(the_player.player_id)
+                    if the_game is not None:
+                        the_game.running = False
+                        if the_game.name in waiting_games:
+                            waiting_games.pop(the_game.name)
+
             continue
         try:
             msg = json.loads(msg_str)
