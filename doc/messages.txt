@@ -100,16 +100,15 @@ unit:
     "position": [x, y],
     "kind": kind,
     "upgrades": [ ],
-    "life": life,
-    "equipment": equipment,
-    "wearout": wearout // abnutzung
+    "hp": hp,
+    "bounty": bounty,
+    "trap_wear": wearout // abnutzung
 }
 
 trap:
 {
     "id": id,
     "player": id,
-
     "position": [x, y],
     "upgrades": [ ],
     "kind": kind,
