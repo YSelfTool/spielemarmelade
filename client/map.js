@@ -7,9 +7,19 @@ function Map(size, units, traps, buildings) {
 }
 
 Map.prototype.draw = function(ctx, tileSize, imgloader) {
-    for (var x = 0; x < this.size.x; x++) {
+    for (var x = 2; x < this.size.x - 2; x++) {
         for (var y = 0; y < this.size.y; y++) {
-            ctx.drawImage(imgloader.get("tile-green"), x * tileSize, y * tileSize);
+            ctx.drawImage(imgloader.get("tile-grass"), x * tileSize, y * tileSize);
+        }
+    }
+    for (var x = 0; x < 2; x++) {
+        for (var y = 0; y < this.size.y; y++) {
+            ctx.drawImage(imgloader.get("tile-ground"), x * tileSize, y * tileSize);
+        }
+    }
+    for (var x = this.size.x - 2; x < this.size.x; x++) {
+        for (var y = 0; y < this.size.y; y++) {
+            ctx.drawImage(imgloader.get("tile-ground"), x * tileSize, y * tileSize);
         }
     }
     for (var i = 0; i < this.buildings.length; i++) {
@@ -19,9 +29,6 @@ Map.prototype.draw = function(ctx, tileSize, imgloader) {
     for (var i = 0; i < this.traps.length; i++) {
         var trap = this.traps[i];
         ctx.drawImage(trap.img, trap.position.x * tileSize, trap.position.y * tileSize);
-    }
-    for (var i = 0; i < this.size.x * this.size.y; i++) {
-        this.hist[i] = 0;
     }
     var hists = new Array(UNIT_TYPE_COUNT);
     for (var i = 0; i < UNIT_TYPE_COUNT; i++) {
