@@ -10,6 +10,16 @@ body {
     display: inline-block;
 }
 
+.header h2 {
+    color: coral;
+    font-size: 32px;
+    font-family: serif;
+    text-shadow: -1px -1px #000,
+        1px -1px #000,
+        -1px 1px #000,
+        2px 2px #000;
+}
+
 .central div {
     display: inline-block;
 }
@@ -45,9 +55,13 @@ body {
 }
 
 .known-buildings-div div {
-    
+    display: inline-block;
 }
 
 .infospace {
     /*border: 1px solid black;*/
+}
+
+.footer-message: {
+    color: darkgreen;
 }

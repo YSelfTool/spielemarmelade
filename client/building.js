@@ -6,6 +6,6 @@ function Building(img, player, pos, size, kind) {
     this.size = new Position(size[0], size[1]);
 }
 
-function BuildingImage(imgloader, building) {
+function BuildingImage(imgloader, kind) {
     return imgloader.get("tile-yellow");
 }
