@@ -20,9 +20,6 @@ message client->server:
     "token": "$token",
     "position": [x, y],
     "kind": "$mobname"
-    "spawner": {
-        "pattern": "$patternname"
-    }
 }
 
 {
