@@ -99,7 +99,7 @@ window.onload=function() {
             "game_started": gameStartHandler
         };
     // ws://134.61.40.201:8765/game
-    network = new Network("ws://134.61.40.201:8765/game", "trapstrat", executors);
+    network = new Network("ws://134.61.40.201:8765/game", executors);
     //network = new Network("ws://localhost:8765/game", "trapstrat", executors);
     network.connect();
     setButtonAndReturnFunc(login, "login-button", "login-name");

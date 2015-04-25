@@ -1,7 +1,5 @@
 
-function Unit(id, img, player, pos, kind, upgrades, health, bounty, trapwear) {
-    this.id = id;
-    this.img = img;
+function Unit(player, pos, kind, upgrades, health, bounty, trapwear) {
     this.player = player;
     this.position = new Position(pos[0], pos[1]);
     this.kind = kind;
@@ -11,6 +9,6 @@ function Unit(id, img, player, pos, kind, upgrades, health, bounty, trapwear) {
     this.trapwear = trapwear;
 }
 
-function UnitImage(imgloader, unit) {
+function UnitKindImage(imgloader, kind) {
     return imgloader.get("tile-red");
 }

@@ -1,7 +1,6 @@
 
-function Network(endpoint, protocol, executors) {
+function Network(endpoint, executors) {
     this.endpoint = endpoint;
-    this.protocol = protocol;
     executors["set_token"] = this.handleSetToken;
     executors.network = this;
     this.executors = executors;
@@ -10,7 +9,7 @@ function Network(endpoint, protocol, executors) {
     this.token = "";
 }
 Network.prototype.connect = function() {
-    this.socket = new WebSocket(this.endpoint, this.protocol);
+    this.socket = new WebSocket(this.endpoint);
     this.socket.network = this;
     this.socket.onopen = function(e) {
         console.log("Connection open");

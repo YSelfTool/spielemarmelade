@@ -1,6 +1,5 @@
 
-function Building(id, img, player, pos, size, kind) {
-    this.id = id;
+function Building(img, player, pos, size, kind) {
     this.img = img;
     this.player = player;
     this.position = new Position(pos[0], pos[1]);
