@@ -1,6 +1,7 @@
 BUILDING_HQ = 1
 BUILDING_SPAWNER = 2
 
+
 class Building(object):
     def __init__(self, building_id, size, owner, position):
         self.building_id = building_id
@@ -20,7 +21,7 @@ class Building(object):
 
 class Headquaters(Building):
     def __init__(self, owner, position):
-        super().__init__(BUILDING_HQ, (1, 3), owner, position)
+        super().__init__(BUILDING_HQ, (1, 4), owner, position)
 
 
 class Spawner(Building):
