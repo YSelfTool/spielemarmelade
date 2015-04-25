@@ -2,6 +2,7 @@ import json
 import asyncio
 import logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 import buildings
 
@@ -74,13 +75,32 @@ class GameState(object):
         self.place_building_in_map(hq_player1)
         self.place_building_in_map(hq_player2)
 
+    def spawn_spawner(self, msg, player):
+        (x, y) = msg["position"]
+        kind = msg["kind"]
+        owner = player.player_id
+        spawner = buildings.Spawner(owner, (x, y), kind)
+        if self.can_place_building_at(spawner, (x, y)):
+            logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
+            self.place_building_in_map(spawner)
+            self.buildings.append(spawner)
+
     # after each round
     def tick(self):
         old_state = self.save_game_state()
         the_actions = self.action_buffer.copy()
         self.action_buffer = []
-        move_units()
-        apply_field_effects()
+
+        for (msg, player) in the_actions:
+            action = msg["action"]
+            if action == "place_spawner":
+                self.spawn_spawner(msg, player)
+            else:
+                logger.warning("Unknown action %s in action buffer, ignoring.", action)
+                continue
+
+        self.move_units()
+        self.apply_field_effects()
         self.send_state_delta(old_state)
 
     # initial state
@@ -105,8 +125,17 @@ class GameState(object):
         deleted_buildings = []
         changed_buildings = []
 
-    def handle_message(self, msg):
-        self.action_buffer.append(msg)
+    def handle_message(self, msg, player):
+        ok = False
+        action = msg["action"]
+        logger.debug("Handeling message with action %s for player %s ", action, player.name)
+        if action == "place_spawner":
+            ok = True
+
+        if ok:
+            logger.debug("Placing message from player %s in buffer for next tick", player.name)
+            self.action_buffer.append((msg, player))
+        return ok
 
     def get_next_unit_id(self):
         tmp = self.unit_id_counter
@@ -135,34 +164,34 @@ class GameState(object):
             if unit.may_move():
                 (x, y) = unit.get_next_position()
                 (ox, oy) = unit.position
-                if (1 <= x < MAP_SIZE_X-1 and 0 <= y < MAP_SIZE_Y):
-                    unit.set_new_position([x,y])
-                if (y == -1):
+                if (1 <= x < MAP_SIZE_X-1) and (0 <= y < MAP_SIZE_Y):
+                    unit.set_new_position([x, y])
+                if y == -1:
                     y += MAP_SIZE_Y
-                    unit.set_new_position([x,y])
-                elif (y == MAP_SIZE_Y):
+                    unit.set_new_position([x, y])
+                elif y == MAP_SIZE_Y:
                     y -= MAP_SIZE_Y
-                    unit.set_new_position([x,y])
+                    unit.set_new_position([x, y])
 
     def apply_field_effects(self):
         for unit in self.units:
             (x,y) = unit.position
-            if (unit.player == self.game.player1.id):
-                if (x == 1):
+            if unit.player == self.game.player1.id:
+                if x == 1:
                     self.game.player1.add_money(unit.bounty)
                     self.game.player1.lose_health_points()
                     self.units.remove(unit)
-            elif (unit.player == self.game.player2.id):
-                if (x == MAP_SIZE_X-2):
+            elif unit.player == self.game.player2.id:
+                if x == MAP_SIZE_X-2:
                     self.game.player2.add_money(unit.bounty)
                     self.game.player2.lose_health_points()
-                    units.remove(unit)
+                    self.units.remove(unit)
             else:
                 trap = self.map[x][y]
-                if  (trap is not None):
+                if trap is not None:
                     trap.handleUnit(unit)
-                    if (unit.hp <= 0):
+                    if unit.hp <= 0:
                         self.units.remove(unit)
-                    if (trap.has_durability and trap.durability <= 0)
+                    if trap.has_durability and trap.durability <= 0:
                         self.traps.remove(trap)
                         self.map[x][y] = None    
