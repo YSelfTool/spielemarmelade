@@ -45,7 +45,7 @@ body {
 }
 
 .known-buildings-div div {
-    
+    display: inline-block;
 }
 
 .infospace {

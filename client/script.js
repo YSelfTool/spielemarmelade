@@ -16,10 +16,6 @@ function draw() {
     }
 };
 
-function readFullGameState(data) {
-    console.log(data);
-}
-
 function login() {
     name = document.getElementById("login-name").value;
     if (name.length > 0) {
@@ -83,6 +79,30 @@ function gameQueuedHandler(data) {
     }
 }
 
+function fullGameStateHandler(data) {
+    console.log("handler runnning");
+    console.log(state);
+    if (state == "running") {
+        var units = [];
+        for (var i = 0; i < data.units.length; i++) {
+            var u = data.units[i];
+            units.push(new Unit(u.owner, u.position, u.id, u.upgrades, u.hp, u.bounty, u.wear));
+        }
+        var traps = [];
+        for (var i = 0; i < data.traps.length; i++) {
+            var t = data.traps[i];
+            traps.push(new Trap(TrapImage(imgloader, t.id), t.owner, t.position, t.id, t.upgrades, t.durability));
+        }
+        var buildings = [];
+        for (var i = 0; i < data.buildings.length; i++) {
+            var b = data.buildings[i];
+            buildings.push(new Building(BuildingImage(imgloader, b.id), b.owner, b.position, b.size, b.upgrades));
+        }
+        map = new Map(data.size, units, traps, buildings);
+        console.log("Houston, we have a map!");
+    }
+}
+
 
 window.onload=function() {
     state = "starting";
@@ -92,11 +112,11 @@ window.onload=function() {
     console.log("Loaded Images!");
     executors = 
         { 
-            "full_game_state": readFullGameState, 
             "error": serverErrorHandler,
             "set_player_id": setPlayerIdHandler,
             "game_queued": gameQueuedHandler,
-            "game_started": gameStartHandler
+            "game_started": gameStartHandler,
+            "full_game_state": fullGameStateHandler 
         };
     // ws://134.61.40.201:8765/game
     network = new Network("ws://134.61.40.201:8765/game", executors);
