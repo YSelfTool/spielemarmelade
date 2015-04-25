@@ -1,0 +1,16 @@
+body {
+    background-color: lightgray;
+}
+
+#main {
+    text-align: center;
+}
+
+.header {
+    display: inline-block;
+}
+
+.central div {
+    display: inline-block;
+}
+
