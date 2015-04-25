@@ -9,6 +9,7 @@ import os
 
 from server.player import Player
 from server import error_codes
+from server import game
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
@@ -20,6 +21,8 @@ ws_logger.addHandler(logging.StreamHandler())
 
 players = {}
 player_id_counter = 1
+waiting_games = {}
+running_games = {}
 
 
 def get_next_player_id():
@@ -34,14 +37,19 @@ def send_error_message(socket, msg, code=-1, can_continue=True):
     yield from socket.send(json.dumps(data))
 
 
+def send_game_queued(socket, game_name):
+    data = {"action": "game_queued", "game_name": game_name}
+    yield from socket.send(json.dumps(data))
+
+
+def send_game_started(socket, enemy):
+    data = {"action": "game_started", "enemy": {"enemy_id": enemy.player_id, "enemy_name": enemy.name}}
+    yield from socket.send(json.dumps(data))
+
+
 def handle_set_name(msg, socket, token):
     name = msg["nickname"]
     msg_token = msg["token"]
-    if msg_token is None or token != msg_token:
-        send_error_message(socket, "Token fehlt oder falsch", error_codes.INVALID_TOKEN, False)
-        logger.error("Client token missing or wrong")
-        socket.close()
-        return None
 
     if name is not None:
         if name in players:
@@ -52,15 +60,42 @@ def handle_set_name(msg, socket, token):
                 asyncio.async(send_error_message(socket, "Name ist bereits belegt", error_codes.NICKNAME_ALREADY_IN_USE))
                 the_player = None
         else:
-            the_player = Player(name, get_next_player_id(), token)
+            the_player = Player(name, get_next_player_id(), token, socket)
             players[name] = the_player
     else:
         logger.error("set_player_name did not contain any name")
     return the_player
 
 
-def handle_join_game(socket, player):
-    pass
+def validate_token(msg, token):
+    return msg["token"] is not None and msg["token"] == token
+
+
+def handle_join_game(msg, socket, player):
+    global waiting_games, running_games
+    game_name = msg["game_name"]
+    if game_name in running_games:
+        logger.info("Player %s is trying to join already running game %s", player.name, game_name)
+        asyncio.async(send_error_message(socket, "Ein Spiel mit diesem Namen läuft bereits. Bitte gib einen neuen Namen für dein Spiel an", error_codes.GAME_WITH_NAME_ALREADY_RUNNING))
+        return
+    elif game_name in waiting_games:
+        logger.info("Player %s joining waiting game %s", player.name, game_name)
+        the_game = waiting_games[game_name]
+        the_game.player2 = player.player_id
+        the_game.running = True
+        running_games[game_name] = the_game
+        waiting_games.pop(game_name)
+        the_player1 = [ply for ply in players.values() if ply.player_id == the_game.player1][0]
+        the_player2 = [ply for ply in players.values() if ply.player_id == the_game.player2][0]
+        logger.info("Staring game %s with %s and %s", the_game.name, the_player1.name, the_player2.name)
+        asyncio.async(send_game_started(the_player1.socket, the_player2))
+        asyncio.async(send_game_started(the_player2.socket, the_player1))
+    else:
+        logger.info("Player %s started a new game called %s", player.name, game_name)
+        the_game = game.Game(game_name)
+        the_game.player1 = player.player_id
+        waiting_games[game_name] = the_game
+        asyncio.async(send_game_queued(socket, game_name))
 
 
 def send_player_id(socket, player):
@@ -91,6 +126,8 @@ def handle_message(websocket, path):
             continue
         try:
             msg = json.loads(msg_str)
+            if not validate_token(msg, the_token):
+                raise Exception("Invalid token")
         except Exception as e:
             logger.error("Error decoding json ", e)
             running = False
@@ -110,7 +147,7 @@ def handle_message(websocket, path):
             if the_player is not None:
                 players.pop(the_player.name)
         elif action == "join_game":
-            handle_join_game(websocket, the_player)
+            handle_join_game(msg, websocket, the_player)
         else:
             logger.error("Unknown action {} ", str(action))
 
