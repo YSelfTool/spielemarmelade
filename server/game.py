@@ -25,10 +25,12 @@ class GameState(object):
         self.unit_id_counter = 1
         self.action_buffer = []
 
-    # after each round
     def tick(self):
+        old_state = 
         the_actions = self.action_buffer.copy()
         action_buffer = []
+
+        send_state_delta()
 
 
     #beginning state
@@ -51,3 +53,15 @@ class GameState(object):
         tmp = self.unit_id_counter
         self.unit_id_counter += 1
         return tmp
+
+    def save_game_state(self):
+        money1 = self.game.player1.money
+        hp1 = self.game.player1.health_points
+        money2 = self.game.player2.money
+        hp1 = self.game.player2.health_points
+        return {
+            "units": [self.units.copy(),
+            "traps": self.traps.copy(),
+            "buildings": self.buildings.copy()
+            "players": ["player1": (hp1, money1),"player2": (hp2, money2)]
+        }
