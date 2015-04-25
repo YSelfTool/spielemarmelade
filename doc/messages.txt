@@ -70,10 +70,15 @@ message server->client:
 }
 
 {
+    "action": "game_queued",
+    "game_name": $game_name
+}
+
+{
     "action": "game_start",
     "enemy": {
-        enemy_player_id,
-        enemy_player_name
+        enemy_player_id: $enemy_player_id,
+        enemy_player_name: $enemy_player_name
     } 
 }
 

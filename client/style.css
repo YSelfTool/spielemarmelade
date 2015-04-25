@@ -26,3 +26,12 @@ body {
     transform: translate(-50%, -50%);
 }
 
+.login-error-message {
+    color: darkred;
+    font-size: 12px;
+}
+
+.lobby-message {
+    color: darkgreen;
+    font-size: 12px;
+}
