@@ -1,4 +1,5 @@
-UNIT_SOLIDER = 1
+UNIT_SOLIDER = 0
+
 
 class Unit(object):
     def __init__(self, unit_id, owner, position, upgrades, hp, bounty, trap_wear):

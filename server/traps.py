@@ -1,4 +1,4 @@
-TRAP_PITFALL = 1
+TRAP_PITFALL = 0
 
 
 class Trap(object):

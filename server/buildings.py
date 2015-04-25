@@ -1,5 +1,5 @@
-BUILDING_HQ = 1
-BUILDING_SPAWNER = 2
+BUILDING_HQ = 0
+BUILDING_SPAWNER = 1
 
 
 class Building(object):
