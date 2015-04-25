@@ -44,12 +44,6 @@ message client->server:
 }
 
 {
-    "action": "start_game",
-    "token": "$token",
-    "game_name": "$game_name"
-}
-
-{
     "action": "join_game",
     "token": "$token",
     "game_name": "$game_name || empty"
@@ -73,6 +67,14 @@ message server->client:
     "message": "$errormessage",
     "can_continue": true/false,
     "error_code": n || -1
+}
+
+{
+    "action": "game_start",
+    "enemy": {
+        enemy_player_id,
+        enemy_player_name
+    } 
 }
 
 {
