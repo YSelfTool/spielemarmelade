@@ -91,6 +91,8 @@ class GameState(object):
         the_actions = self.action_buffer.copy()
         self.action_buffer = []
 
+        self.move_units()
+        
         for (msg, player) in the_actions:
             action = msg["action"]
             if action == "place_spawner":
@@ -99,7 +101,6 @@ class GameState(object):
                 logger.warning("Unknown action %s in action buffer, ignoring.", action)
                 continue
 
-        self.move_units()
         self.apply_field_effects()
         self.send_state_delta(old_state)
 
