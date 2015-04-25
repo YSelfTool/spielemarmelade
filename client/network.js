@@ -20,11 +20,11 @@ Network.prototype.connect = function() {
         }
     };
     this.socket.onerror = function(e) {
-        console.log(["error", e]);
+        console.log(e);
     };
     this.socket.onclose = function(e) {
         this.state = false;
-        console.log(["close", e]);
+        console.log(e);
         console.log("Connection closed");
     };
     this.socket.onmessage = function(e) {
