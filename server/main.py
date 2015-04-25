@@ -17,7 +17,7 @@ def handle_message(websocket, path):
             running = False
             continue
         msg = json.loads(msg_str)
-        print("Got message: %2".format(json.dumps(msg)))
+        logger.error("Got message: {}".format(json.dumps(msg)))
 
 start_server = websockets.serve(handle_message, 'localhost', 8765)
 
