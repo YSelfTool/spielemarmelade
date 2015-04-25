@@ -51,13 +51,12 @@ class GameState(object):
         self.place_building_in_map(hq_player2)
 
     # after each round
-
     def tick(self):
         old_state = save_game_state() 
         the_actions = self.action_buffer.copy()
         self.action_buffer = []
-
-        send_state_delta()
+        move_units()
+        self.send_state_delta(old_state)
 
 
     #beginning state
@@ -71,7 +70,7 @@ class GameState(object):
         })
 
     # changes after each tick
-    def send_state_delta(self):
+    def send_state_delta(self, old_state):
         pass
 
     def handle_message(self, msg):
@@ -98,3 +97,41 @@ class GameState(object):
         json_str = json.dumps(data)
         self.game.player1.socket.send(json_str)
         self.game.player2.socket.send(json_str)
+
+    def move_units(self):
+        for unit in self.units:
+            if unit.may_move():
+                (x, y) = unit.get_next_position()
+                (ox, oy) = unit.position
+                if (1 <= x < MAP_SIZE_X-1 and 0 <= y < MAP_SIZE_Y):
+                    set_new_position([x,y])
+                if (y == -1):
+                    y += MAP_SIZE_Y
+                    set_new_position([x,y])
+                elif (y == MAP_SIZE_Y):
+                    y -= MAP_SIZE_Y
+                    set_new_position([x,y])
+
+    def apply_field_effects(self):
+        for unit in self.unit:
+            (x,y) = unit.position
+            if (unit.player == game.player1.id):
+                if (x == 1):
+                    game.player1.add_money(unit.bounty)
+                    game.player1.lose_health_points()
+                    units.remove(unit)
+            elif (unit.player == game.player2.id):
+                if (x == MAP_SIZE_X-2):
+                    game.player2.add_money(unit.bounty)
+                    game.player2.lose_health_points()
+                    units.remove(unit)
+            else:
+                trap = map[x][y]
+                if  (trap is not None):
+                    trap.handleUnit(unit)
+                    if (unit.hp <= 0):
+                        units.remove(unit)
+                    if (trap.has_durability and trap.durability <= 0)
+                        traps.remove(trap)
+                        map[x][y] = None    
+
