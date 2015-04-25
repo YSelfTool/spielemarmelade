@@ -31,9 +31,7 @@ def get_next_player_id():
 
 def send_error_message(socket, msg, code=-1, can_continue=True):
     data = {"action": "error", "message": msg, "error_code": code, "can_continue": can_continue}
-    print("sending error message",data)
     yield from socket.send(json.dumps(data))
-    print("sent error message")
 
 
 def handle_set_name(msg, socket, token):
@@ -60,6 +58,12 @@ def handle_set_name(msg, socket, token):
         logger.error("set_player_name did not contain any name")
     return the_player
 
+
+def send_player_id(socket, player):
+    data = {"action": "set_player_id", "player_id": player.player_id}
+    yield from socket.send(data)
+
+
 def dumpObjectInfo(obj):
     for e in dir(obj):
         attr=getattr(obj,e)
@@ -81,7 +85,6 @@ def handle_message(websocket, path):
             if the_player is not None:
                 players.pop(the_player.name)
             continue
-        print("Message String:",msg_str)
         try:
             msg = json.loads(msg_str)
         except Exception as e:
@@ -93,7 +96,9 @@ def handle_message(websocket, path):
         action = msg["action"]
         if action == "set_name":
             the_player = handle_set_name(msg, websocket, the_token)
-            logger.debug("Added player %s", the_player)
+            if the_player is not None:
+                asyncio.async(send_player_id(websocket, the_player))
+                logger.debug("Added player %s", the_player)
         elif action == "quit":
             logger.info("Client is quitting")
             websocket.close()

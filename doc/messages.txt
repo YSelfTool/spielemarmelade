@@ -64,6 +64,11 @@ message server->client:
 }
 
 {
+    "action": set_player_id",
+    "player_id": n
+}
+
+{
     "action": "error",
     "message": "$errormessage",
     "can_continue": true/false,
@@ -85,7 +90,7 @@ dataformats:
 unit:
 {
     "id": id,
-    "mine": true/false,
+    "player_id": n,
     "position": [x, y],
     "kind": kind,
     "upgrades": [ ],
@@ -97,7 +102,7 @@ unit:
 trap:
 {
     "id": id,
-    "mine": true/false,
+    "player_id": n,
     "position": [x, y],
     "upgrades": [ ],
     "kind": kind,
@@ -108,7 +113,7 @@ trap:
 building:
 {
     "id": id,
-    "mine": true/false,
+    "player_id": n,
     "position": y,
     "kind": kind
 }
