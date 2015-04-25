@@ -27,8 +27,8 @@ class GameState(object):
 
     # after each round
     def tick(self):
-        temp = self.actionbuffer
-        action_buffer = {}
+        the_actions = self.action_buffer.copy()
+        action_buffer = []
 
 
     #beginning state
