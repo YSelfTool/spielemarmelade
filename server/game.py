@@ -29,18 +29,41 @@ class GameState(object):
         self.action_buffer = []
         self.spawn_headquaters()
 
-    def place_building_in_map(self, building):
+    def get_building_bounds(self, building):
         building_x_start = building.position[0]
         building_x_stop = building_x_start+building.size[0]
         building_y_start = building.position[1]
         building_y_stop = building_y_start+building.size[1]
 
-        for x in range(building_x_start, building_x_stop):
-            for y in range(building_y_start, building_y_stop):
+        return building_x_start, building_x_stop, building_y_start, building_y_stop
+
+    def get_building_bounds_at_position(self, building, position):
+        building_x_start = position[0]
+        building_x_stop = building_x_start+building.size[0]
+        building_y_start = position[1]
+        building_y_stop = building_y_start+building.size[1]
+
+        return building_x_start, building_x_stop, building_y_start, building_y_stop
+
+    def place_building_in_map(self, building):
+        (x1, x2, y1, y2) = self.get_building_bounds(building)
+
+        for x in range(x1, x2):
+            for y in range(y1, y2):
                 self.map[x][y] = building
 
     def can_place_building_at(self, building, position):
-        return True # TODO: Actually implement this
+        (x1, x2, y1, y2) = self.get_building_bounds_at_position(building, position)
+
+        can_place = True
+        for x in range(x1, x2):
+            for y in range(y1, y2):
+                if self.map[x][y] is not None:
+                    can_place = False
+                    break
+            if not can_place:
+                break
+        return can_place
 
     def spawn_headquaters(self):
         hq_player1 = buildings.Headquaters(self.game.player1.player_id, (0, int(MAP_SIZE_Y/2-2)))
