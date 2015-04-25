@@ -68,6 +68,7 @@ function gameStartHandler(data) {
         enemy = new Player(data["enemy"][0], data["enemy"][1]);
         document.getElementById("lobby-div").style.display = "none";
         state = "running";
+        showMessage("Mögen die Spiele beginnen.");
         draw();
     }
 }
@@ -137,4 +138,8 @@ function setButtonAndReturnFunc(func, buttonname, inputname) {
         if (e.keyCode == 13)
             func();
     };
+}
+
+function showMessage(msg) {
+    document.getElementById("footer").innerHTML = msg;
 }
