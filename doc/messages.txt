@@ -7,6 +7,7 @@ message client->server:
 
 {
     "action": "place_trap",
+    "token": "$token",
     "position": [x, y],
     "trap": {
         "kind": "pitfall",
@@ -16,6 +17,7 @@ message client->server:
 
 {
     "action": "place_spawner",
+    "token": "$token",
     "position": [x, y],
     "kind": "$mobname"
     "spawner": {
@@ -25,26 +27,47 @@ message client->server:
 
 {
     "action": "upgrade_building",
+    "token": "$token",
     "building_id": m,
     "new_upgrades": []
 }
 
 {
     "action": "trigger_spawner",
+    "token": "$token",
     "spawner_id": m
 }
 
 {
-    "action": "quit"
+    "action": "quit",
+    "token": "$token"
+}
+
+{
+    "action": "start_game",
+    "token": "$token",
+    "game_name": "$game_name"
+}
+
+{
+    "action": "join_game",
+    "token": "$token",
+    "game_name": "$game_name || empty"
 }
 
 
 message server->client:
 
 {
+    "action": "set_token",
+    "token": "$token"
+}
+
+{
     "action": "error",
     "message": "$errormessage",
-    "can_continue": true/false
+    "can_continue": true/false,
+    "error_code": n || -1
 }
 
 {
