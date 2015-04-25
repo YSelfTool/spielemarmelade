@@ -7,15 +7,27 @@
         <script src="script.js" async></script>
         <script src="imageloader.js" async></script>
         <script src="network.js" async></script>
+        <script src="constants.js" async></script>
+        <script src="trap.js" async></script>
+        <script src="unit.js" async></script>
+        <script src="map.js" async></script>
+        <script src="player.js" async></script>
     </head>
     <body>
         <div id="main">
             <div id="login-div" class="overlay">
-                Name auswählen:<br>
+                Spielername auswählen:<br>
                 <input type="text" id="login-name" placeholder="Name"></input>
-                <button id="login-button">Login</button>
+                <button id="login-button">Login</button><br>
+                <span id="login-message" class="login-error-message"></span>
             </div>
-           <div id="header" class="header">
+            <div id="lobby-div" class="overlay" style="display: none">
+                Spielname auswählen:<br>
+                <input type="text" id="lobby-name" size="25" placeholder="Für zufälliges Spiel leer lassen"></input><br>
+                <button id="lobby-button">Öffnen oder teilnehmen</button><br>
+                <span id="lobby-message" class="lobby-message"></span>
+            </div>
+            <div id="header" class="header">
                 Header
             </div>
             <div id="central" class="central">
