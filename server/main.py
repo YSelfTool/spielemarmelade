@@ -141,6 +141,8 @@ def simulate_game(the_game):
     elif player1_still_here:
         asyncio.async(send_error_message(the_game.player1.socket, "Der andere Spieler hat das Spiel verlassen", error_codes. GAME_OVER_PLAYER_QUIT, False))
 
+    running_games.pop(the_game.name)
+
 
 def handle_game_message(the_game, msg):
     return the_game.state.handle_message(msg)
