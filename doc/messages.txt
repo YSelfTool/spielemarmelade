@@ -97,7 +97,9 @@ dataformats:
 player: 
 {
     id: id,
-    name: name
+    name: name,
+    money: money,
+    health_points: health_points
 }
 
 unit:
