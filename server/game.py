@@ -1,5 +1,5 @@
+import json
 import logging
-
 logger = logging.getLogger(__name__)
 
 MAP_SIZE_X = 64
@@ -28,19 +28,20 @@ class GameState(object):
     def tick(self):
         old_state = 
         the_actions = self.action_buffer.copy()
-        action_buffer = []
+        self.action_buffer = []
 
         send_state_delta()
 
 
     #beginning state
     def send_full_state(self):
-        return {
+        self.do_send_data({
+            "action": "full_game_state",
             "size": [MAP_SIZE_X, MAP_SIZE_Y],
             "units": [unit.to_dict() for unit in self.units],
             "traps": [trap.to_dict() for trap in self.traps],
-            "buildings": [buildings.to_dict() for building in self.buildings]
-        }
+            "buildings": [building.to_dict() for building in self.buildings]
+        })
 
     #changes after each tick
     def send_state_delta(self):
@@ -54,6 +55,7 @@ class GameState(object):
         self.unit_id_counter += 1
         return tmp
 
+<<<<<<< HEAD
     def save_game_state(self):
         money1 = self.game.player1.money
         hp1 = self.game.player1.health_points
@@ -65,3 +67,9 @@ class GameState(object):
             "buildings": self.buildings.copy()
             "players": ["player1": (hp1, money1),"player2": (hp2, money2)]
         }
+=======
+    def do_send_data(self, data):
+        json_str = json.dumps(data)
+        self.game.player1.socket.send(json_str)
+        self.game.player2.socket.send(json_str)
+>>>>>>> e107e19f31ccc91834d7eb062c0e72e30491485a
