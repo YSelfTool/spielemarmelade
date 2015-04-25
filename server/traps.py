@@ -2,7 +2,7 @@ TRAP_PITFALL = 0
 
 
 class Trap(object):
-    def __init__(self, trap_id, owner, position, durability, has_durability):
+    def __init__(self, trap_id, owner, position, durability, has_durability=True):
         self.trap_id = trap_id
         self.owner = owner
         self.position = position
@@ -27,7 +27,7 @@ class Trap(object):
 
 class PitfallTrap(Trap):
     def __init__(self, owner, position, capacity):
-        super().__init__(TRAP_PITFALL, owner, position, -1)
+        super().__init__(TRAP_PITFALL, owner, position, -1, False)
         self.capacity = capacity
         self.mobs_in_trap = 0
 
@@ -36,3 +36,8 @@ class PitfallTrap(Trap):
         d["capacity"] = self.capacity
         d["mobs_in_trap"] = self.mobs_in_trap
         return d
+
+    def handle_unit(self, unit):
+        if self.mobs_in_trap <= self.capacity:
+            self.mobs_in_trap += 1
+            unit.hp = 0

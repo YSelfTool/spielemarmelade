@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 import buildings
+import traps
 
 MAP_SIZE_X = 64
 MAP_SIZE_Y = 32
@@ -184,4 +185,7 @@ class GameState(object):
                         self.units.remove(unit)
                     if trap.has_durability and trap.durability <= 0:
                         self.traps.remove(trap)
-                        self.map[x][y] = None    
+                        self.map[x][y] = None
+                    elif isinstance(trap, traps.PitfallTrap) and (trap.mobs_in_trap == trap.capacity):
+                        self.traps.remove(trap)
+                        self.map[x][y] = None
