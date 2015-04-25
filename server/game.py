@@ -52,7 +52,6 @@ class GameState(object):
         self.place_building_in_map(hq_player2)
 
     # after each round
-
     def tick(self):
         old_state = self.save_game_state()
         the_actions = self.action_buffer.copy()
@@ -60,8 +59,7 @@ class GameState(object):
 
         self.send_state_delta()
 
-
-    #beginning state
+    # initial state
     def send_full_state(self):
         self.do_send_data({
             "action": "full_game_state",
