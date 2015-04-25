@@ -59,14 +59,18 @@ def handle_set_name(msg, socket, token):
     return the_player
 
 
+def handle_join_game(socket, player):
+    pass
+
+
 def send_player_id(socket, player):
     data = {"action": "set_player_id", "id": player.player_id}
-    yield from socket.send(data)
+    yield from socket.send(json.dumps(data))
 
 
-def dumpObjectInfo(obj):
+def dump_object_info(obj):
     for e in dir(obj):
-        attr=getattr(obj,e)
+        attr = getattr(obj, e)
         print("name:", str(e), "type:", type(attr), "content:", attr)
 
 
@@ -105,6 +109,8 @@ def handle_message(websocket, path):
             running = False
             if the_player is not None:
                 players.pop(the_player.name)
+        elif action == "join_game":
+            handle_join_game(websocket, the_player)
         else:
             logger.error("Unknown action {} ", str(action))
 
