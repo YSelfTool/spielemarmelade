@@ -70,7 +70,7 @@ function serverErrorHandler(data) {
         } else if (data.error_code == GAME_WITH_NAME_ALREADY_RUNNING) {
             document.getElementById("lobby-message").innerHTML = data.message;
             state = "loggedin";
-        } else if (data.error_code == GAME_OVER_PLAYER_QUIT || data.error_code == GAME_WON || data.error_code == GAME_OVER_PLAYER_QUIT ) {
+        } else if (data.error_code == GAME_OVER_PLAYER_QUIT || data.error_code == GAME_OVER_WON || data.error_code == GAME_OVER_LOST ) {
             state = "end";
             alert(data.message);
         }
