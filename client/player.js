@@ -5,7 +5,7 @@ function Player(id, name, side) {
     this.side = side;
 }
 Player.prototype.spawnerLane = function() {
-    return this.side == "left" ? 1 : 62;
+    return this.side == "left" ? 1 : map.size.x - 2;
 };
 
 
