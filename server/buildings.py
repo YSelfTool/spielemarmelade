@@ -21,9 +21,6 @@ class Building(object):
             "upgrades": self.upgrades
         }
 
-    def copy(self):
-        return Building(self.building_kind, self.building_id, self.size, self.owner, self.position)
-
     def __repr__(self):
         return "<Building: Id={}, Kind={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.building_kind, self.size, self.owner, self.position, self.upgrades)
 
@@ -41,9 +38,6 @@ class Headquaters(Building):
 
     def __repr__(self):
         return "<Headquaters: Id={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.size, self.owner, self.position, self.upgrades)
-
-    def copy(self):
-        return Headquaters(self.building_id, self.owner, self.position)
 
     def tick(self, player):
         player.add_money(self.income_per_tick)
@@ -72,11 +66,6 @@ class Spawner(Building):
             (self.num_mobs == building.num_mobs) and \
             (self.cooldown_ticks == building.cooldown_ticks) and \
             (self.current_cooldown == building.current_cooldown)
-
-    def copy(self):
-        s = Spawner(self.building_id, self.owner, self.position, self.mob_kind, self.num_mobs, self.cooldown_ticks)
-        s.current_cooldown = self.current_cooldown
-        return s
 
     def to_dict(self):
         d = super().to_dict()

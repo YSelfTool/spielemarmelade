@@ -32,9 +32,6 @@ class Trap(object):
             "durability": self.durability
         }
 
-    def copy(self):
-        return Trap(self.trap_id, self.kind, self.owner, self.position, self.durability, self.has_durability)
-
     def handle_unit(self, unit, player):
         pass
 
@@ -58,9 +55,6 @@ class PitfallTrap(Trap):
         d["mobs_in_trap"] = self.mobs_in_trap
         return d
 
-    def copy(self):
-        return PitfallTrap(self.trap_id, self.owner, self.position, self.capacity)
-
     def equals(self, trap):
         return super().equals(trap) and (self.mobs_in_trap == trap.mobs_in_trap)
 
@@ -76,9 +70,6 @@ class SpikeTrap(Trap):
 
     def __repr__(self):
         return "<SpikeTrap: Id={}, Owner={}, Position={}, Durability={}>".format(self.trap_id, self.owner, self.position, self.durability)
-
-    def copy(self):
-        return SpikeTrap(self.trap_id, self.owner, self.position)
 
     def handle_unit(self, unit, player):
         self.durability -= unit.trap_wear
@@ -97,9 +88,6 @@ class CatapultTrap(Trap):
         d = super().to_dict()
         d["range"] = self.range
         return d
-
-    def copy(self):
-        return CatapultTrap(self.trap_id, self.owner, self.position)
 
     def handle_unit(self, unit, player):
         self.durability -= unit.trap_wear
@@ -120,9 +108,6 @@ class LootTrap(Trap):
 
     def __repr__(self):
         return "<LootTrap: Id={}, Owner={}, Position={}, Durability={}>".format(self.trap_id, self.owner, self.position, self.durability)
-
-    def copy(self):
-        return LootTrap(self.trap_id, self.owner, self.position)
 
     def handle_unit(self, unit, player):
         self.durability -= unit.trap_wear

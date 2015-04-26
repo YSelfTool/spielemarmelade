@@ -33,11 +33,6 @@ class Unit(object):
             "wear": self.trap_wear
         }
 
-    def copy(self):
-        u = Unit(self.unit_id, self.unit_kind, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear, self.direction, self.speed)
-        u.speed_counter = self.speed_counter
-        return u
-
     def get_next_position(self):
         pass
 
