@@ -309,11 +309,11 @@ class GameState(object):
     def apply_field_effects(self):
         for unit in self.units:
             (x, y) = unit.position
-            if (unit.owner == self.game.player1.player_id) and (x == MAP_SIZE_X-2):
+            if (unit.owner == self.game.player1.player_id) and (x >= MAP_SIZE_X-2):
                 self.game.player2.add_money(unit.bounty)
                 self.game.player2.lose_health_points()
                 self.units.remove(unit)
-            elif (unit.owner == self.game.player2.player_id) and (x == 1):
+            elif (unit.owner == self.game.player2.player_id) and (x <= 1):
                 self.game.player1.add_money(unit.bounty)
                 self.game.player1.lose_health_points()
                 self.units.remove(unit)
