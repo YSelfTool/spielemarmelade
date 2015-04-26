@@ -56,7 +56,7 @@ class UnitSolider(Unit):
         speed = 5
         trap_wear = 2
         hp = 20
-        bounty = 20
+        bounty = 150
         super().__init__(object_id, UNIT_SOLIDER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
@@ -69,7 +69,7 @@ class UnitJumper(Unit):
         speed = 8
         trap_wear = 3
         hp = 20
-        bounty = 20
+        bounty = 200
         super().__init__(object_id, UNIT_JUMPER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
@@ -82,7 +82,7 @@ class UnitRunner(Unit):
         speed = 2
         trap_wear = 1
         hp = 20
-        bounty = 20
+        bounty = 200
         super().__init__(object_id, UNIT_RUNNER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
@@ -95,7 +95,7 @@ class UnitTank(Unit):
         speed = 5
         trap_wear = 3
         hp = 50
-        bounty = 20
+        bounty = 500
         super().__init__(object_id, UNIT_TANK, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
@@ -108,7 +108,7 @@ class UnitCrookedSoldier(Unit):
         speed = 5
         trap_wear = 2
         hp = 20
-        bounty = 20
+        bounty = 750
         super().__init__(object_id, UNIT_CROOKEDSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
@@ -124,7 +124,7 @@ class UnitTopStepSoldier(Unit):
         speed = 5
         trap_wear = 2
         hp = 20
-        bounty = 20
+        bounty = 600
         super().__init__(object_id, UNIT_TOPSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
@@ -146,7 +146,7 @@ class UnitBottomStepSoldier(Unit):
         speed = 5
         trap_wear = 2
         hp = 20
-        bounty = 20
+        bounty = 600
         super().__init__(object_id, UNIT_BOTTOMSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
@@ -170,3 +170,10 @@ lookup = {
     UNIT_BOTTOMSTEPSOLDIER: UnitBottomStepSoldier
 }
 
+cost_lookup[UnitSolider] = ("unit", UNIT_SOLIDER, 50)
+cost_lookup[UnitJumper] = ("unit", UNIT_JUMPER, 150)
+cost_lookup[UnitRunner] = ("unit", UNIT_RUNNER, 150)
+cost_lookup[UnitTank] = ("unit", UNIT_TANK, 200)
+cost_lookup[UnitCrookedSoldier] = ("unit", UNIT_CROOKEDSOLDIER, 500)
+cost_lookup[UnitTopStepSoldier] = ("unit", UNIT_TOPSTEPSOLDIER, 400)
+cost_lookup[UnitBottomStepSoldier] = ("unit", UNIT_BOTTOMSTEPSOLDIER, 400)

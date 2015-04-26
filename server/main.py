@@ -10,6 +10,7 @@ import os
 from player import Player
 import error_codes
 import game
+import game_object
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
@@ -45,6 +46,11 @@ def send_game_queued(socket, game_name):
 
 def send_game_started(socket, enemy, enemy_side):
     data = {"action": "game_started", "enemy": {"enemy_id": enemy.player_id, "enemy_name": enemy.name, "enemy_side": enemy_side}}
+    yield from socket.send(json.dumps(data))
+
+
+def send_cost_table(socket):
+    data = {"action": "set_cost_table", "data": [list(cv) for cv in game_object.cost_lookup.values()]}
     yield from socket.send(json.dumps(data))
 
 
@@ -87,6 +93,8 @@ def handle_join_game(msg, socket, player):
         the_game.running = True
         running_games[game_name] = the_game
         waiting_games.pop(game_name)
+        asyncio.async(send_cost_table(the_game.player1.socket))
+        asyncio.async(send_cost_table(the_game.player2.socket))
         logger.info("Staring game %s with %s and %s", the_game.name, the_game.player1.name, the_game.player2.name)
         asyncio.async(send_game_started(the_game.player1.socket, the_game.player2, "right"))
         asyncio.async(send_game_started(the_game.player2.socket, the_game.player1, "left"))

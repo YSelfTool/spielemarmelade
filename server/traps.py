@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-from game_object import Placeable
+from game_object import Placeable, cost_lookup
 
 
 class Trap(Placeable):
@@ -114,3 +114,8 @@ lookup = {
     TRAP_CATAPULT: CatapultTrap,
     TRAP_LOOT: LootTrap
 }
+
+cost_lookup[PitfallTrap] = ("trap", TRAP_PITFALL, 500)
+cost_lookup[SpikeTrap] = ("trap", TRAP_SPIKE, 750)
+cost_lookup[CatapultTrap] = ("trap", TRAP_CATAPULT, 4000)
+cost_lookup[LootTrap] = ("trap", TRAP_LOOT, 3000)

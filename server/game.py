@@ -9,6 +9,7 @@ logger.setLevel(logging.INFO)
 import buildings
 import traps
 import units
+import game_object
 
 MAP_SIZE_X = 32
 MAP_SIZE_Y = 16
@@ -117,7 +118,7 @@ class GameState(object):
         owner = player.player_id
         logger.debug("%s is trying to spawn spawner", player.name)
         spawner = buildings.Spawner(self.get_next_id(), owner, (x, y), kind, 1, 10)
-        if self.can_place_building_at(spawner, (x, y)):
+        if self.can_place_building_at(spawner, (x, y)) and self.pay_for(player, spawner):
             logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(spawner)
             self.buildings.append(spawner)
@@ -127,7 +128,7 @@ class GameState(object):
         kind = msg["kind"]
         owner = player.player_id
         trap = traps.lookup[kind](self.get_next_id(), owner, (x, y))
-        if self.can_place_building_at(trap, (x, y)):
+        if self.can_place_building_at(trap, (x, y)) and self.pay_for(player, trap):
             logger.debug("Spawning trap of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(trap)
             self.traps.append(trap)
@@ -142,7 +143,16 @@ class GameState(object):
         mob_pos[0] += player.direction
         for n in range(spawner.num_mobs):
             mob = units.lookup[spawner.mob_kind](self.get_next_id(), player.player_id, mob_pos, [], player.direction)
-            self.units.append(mob)
+            if self.pay_for(player, mob):
+                self.units.append(mob)
+
+    def pay_for(self, player, obj):
+        if obj.__class__ in game_object.cost_lookup:
+            _, _, cost = game_object.cost_lookup[obj.__class__]
+            if player.money >= cost:
+                player.add_money(-cost)
+                return True
+        return False
 
     # update game state
     def tick(self):

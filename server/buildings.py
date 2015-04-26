@@ -1,7 +1,8 @@
 BUILDING_HQ = 0
 BUILDING_SPAWNER = 1
 
-from game_object import Placeable
+from game_object import Placeable, cost_lookup
+import units
 
 
 class Building(Placeable):
@@ -44,6 +45,8 @@ class Spawner(Building):
         self.num_mobs = num_mobs
         self.cooldown_ticks = cooldown_ticks
         self.current_cooldown = 0
+        self.spawned_units = 0
+        _, _, self.money_per_tick = cost_lookup[units.lookup[self.mob_kind]] * 0.01
 
     def __repr__(self):
         return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}, NumMobs={}, CooldownTicks={}, CurrentCooldown={}>".format(self.object_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind, self.num_mobs, self.cooldown_ticks, self.current_cooldown)
@@ -64,6 +67,7 @@ class Spawner(Building):
         return d
 
     def tick(self, player):
+        player.add_money(self.spawned_units*self.money_per_tick)
         self.current_cooldown -= 1
         if self.current_cooldown < 0:
             self.current_cooldown = 0
@@ -74,3 +78,5 @@ class Spawner(Building):
     def reset_cooldown(self):
         self.current_cooldown = self.cooldown_ticks
 
+cost_lookup[Headquaters] = ("building", BUILDING_HQ, 0)
+cost_lookup[Spawner] = ("building", BUILDING_SPAWNER, 100)
