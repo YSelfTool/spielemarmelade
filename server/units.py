@@ -34,6 +34,14 @@ class Unit(object):
     def set_new_position(self, position):
         self.position = position
 
+    def equals(self, unit):
+        if (unit.position != self.position):
+            return False
+        #TODO if (upgrades):
+        if (unit.hp != self.hp):
+            return False
+        return True
+
 class UnitSolider(Unit):
     def __init__(self, owner, position, upgrades):
         super().__init__(UNIT_SOLIDER, owner, position, upgrades, 10, 20, 1)

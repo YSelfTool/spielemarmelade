@@ -25,6 +25,14 @@ class Trap(object):
     def handle_unit(self, unit):
         pass
 
+    def equals(self, trap):
+        if (trap.position != self.position):
+            return False
+        #TODO if (upgrades):
+        if (trap.durability != self.durability):
+            return False
+        return True
+
 class PitfallTrap(Trap):
     def __init__(self, owner, position, capacity):
         super().__init__(TRAP_PITFALL, owner, position, -1)
