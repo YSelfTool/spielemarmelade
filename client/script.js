@@ -125,26 +125,26 @@ function changedGameStateHandler(data) {
         for (var i = 0; i < data.new_traps.length; i++) {
             map.addTrap(data.new_traps[i]);
         }
-        var unitIdsToDelete = []
-        for (var i = 0; i < data.deleted_units; i++) {
+        var unitIdsToDelete = [];
+        for (var i = 0; i < data.deleted_units.length; i++) {
             unitIdsToDelete.push(data.deleted_units[i].id);
         }
-        for (var i = 0; i < data.changed_units; i++) {
+        for (var i = 0; i < data.changed_units.length; i++) {
             unitIdsToDelete.push(data.changed_units[i].id);
         }
         map.removeUnits(unitIdsToDelete);
         var trapIdsToDelete = [];
-        for (var i = 0; i < data.deleted_traps; i++) {
+        for (var i = 0; i < data.deleted_traps.length; i++) {
             trapIdsToDelete.push(data.deleted_traps[i].id);
         }
-        for (var i = 0; i < data.changed_traps; i++) {
+        for (var i = 0; i < data.changed_traps.length; i++) {
             trapIdsToDelete.push(data.changed_traps[i].id);
         }
-        map.removeTraps(trapIdsToDelete);
-        for (var i = 0; i < data.changed_units; i++) {
+        //map.removeTraps(trapIdsToDelete);
+        for (var i = 0; i < data.changed_units.length; i++) {
             map.addUnit(data.changed_units[i]);
         }
-        for (var i = 0; i < data.changed_traps; i++) {
+        for (var i = 0; i < data.changed_traps.length; i++) {
             map.addTrap(data.changed_traps[i]);
         }
     }
@@ -152,8 +152,15 @@ function changedGameStateHandler(data) {
 
 function placeSpawner(pos) {
     var kind = currentBuildingSpawnerKind;
-    network.placeSpawner(pos, kind);
-    cache.addBuilding(imgloader, BUILDING_SPAWNER, kind, pos, new Position(1, 1), player.id);
+    var b = map.buildingByPos(pos);
+    if (b == null) {
+        network.placeSpawner(pos, kind);
+        cache.addBuilding(imgloader, BUILDING_SPAWNER, kind, pos, new Position(1, 1), player.id);
+    } else {
+        if (b.kind == BUILDING_SPAWNER) {
+            triggerSpawner(b);
+        }
+    }
 }
 
 function placeTrap(pos) {
@@ -163,12 +170,11 @@ function placeTrap(pos) {
 }
 
 function triggerSpawner(spawner) {
-    network.triggerSpawner(spawner.id);
+    network.triggerSpawner(spawner.id, spawner.position);
 }
 
 function canvasClickHandler(canvasPos) {
     var mapPos = canvasPos.div(tileSize).floor();
-    console.log(mapPos);
     if (currentlyBuilding == "building") {
         if (currentBuildingType == BUILDING_SPAWNER && mapPos.x == player.spawnerLane()) {
             placeSpawner(mapPos);

@@ -35,5 +35,5 @@ Position.prototype.toJSON = function() {
     return [ this.x, this.y ];
 };
 Position.prototype.equals = function(pos) {
-    return this.x == pos.x && this.y == pos.y;
+    return (this.x == pos.x) && (this.y == pos.y);
 }

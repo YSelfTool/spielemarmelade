@@ -27,4 +27,5 @@ function preloadImages(imgloader) {
     imgloader.load("tile-turquoise");
     imgloader.load("tile-brown");
     imgloader.load("unit-1");
+    imgloader.load("unit-0");
 }

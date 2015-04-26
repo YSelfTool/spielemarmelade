@@ -19,7 +19,7 @@ function unitInfoByKind(kind) {
 
 function showSpawnerInfo(kind) {
     showInfo("Spawner: " + spawnerNameByKind(kind), 
-        "Spawner schicken Einheiten für dich los. Ohne Upgrade musst du sie dafür anklicken. " + unitInfoByKind(kind));
+        "Spawner schicken Einheiten für dich los, wenn du sie anklickst. " + unitInfoByKind(kind));
 }
 
 function showTrapInfo(kind) {
