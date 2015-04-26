@@ -21,6 +21,24 @@ class Game(object):
         self.state = None
 
 
+def get_new_changed_deleted(current, previous, id_lambda):
+    current_state_ids = map(id_lambda, current)
+    previous_state_ids = map(id_lambda, previous)
+    new_things = list(filter(lambda thing: id_lambda(thing) not in previous_state_ids, current))
+    deleted_things = list(filter(lambda thing: id_lambda(thing) not in current_state_ids, previous))
+
+    changed_things = []
+    for thing in current:
+        thing_id = id_lambda(thing)
+        old_thing = [thing for thing in previous if id_lambda(thing) == thing_id]
+        if len(old_thing) == 1:
+            old_thing = old_thing[0]
+            if not thing.equals(old_thing):
+                changed_things.append(thing)
+
+    return new_things, changed_things, deleted_things
+
+
 class GameState(object):
     def __init__(self, the_game):
         self.game = the_game
@@ -131,6 +149,7 @@ class GameState(object):
         old_state = self.save_game_state()
 
         self.move_units()
+        self.tick_buildings()
 
         for (msg, player) in the_actions:
             action = msg["action"]
@@ -162,15 +181,16 @@ class GameState(object):
 
     # changes after each tick
     def send_state_delta(self, old_state):
-        changed_units = []
         changed_traps = []
+        changed_buildings = []
         players = []
 
+        """
         previous_state_units = old_state["units"]
         old_units_id_max = 0
         for old_unit in previous_state_units:
             if old_unit.unit_id > old_units_id_max:
-                old_units_id_max = previous_state_units.unit_id
+                old_units_id_max = old_unit.unit_id
 
         unit_to_id = lambda unit: unit.unit_id
         current_state_unit_ids = map(unit_to_id, self.units)
@@ -209,13 +229,26 @@ class GameState(object):
             else:
                 logger.debug("More than one trap with the same id found. Wat. (%s)", old_trap)
 
-        old_buildings = old_state["buildings"]
-        old_building_id_max = 0
-        for old_building in old_buildings:
-            if old_building.building_id > old_building_id_max:
-                old_building_id_max = old_building.building_id
+        previous_state_buildings = old_state["buildings"]
+        previous_state_building_id_max = 0
+        for old_building in previous_state_buildings:
+            if old_building.building_id > previous_state_building_id_max:
+                previous_state_building_id_max = old_building.building_id
 
-        new_buildings = [building for building in self.buildings if building.building_id > old_building_id_max]
+        new_buildings = [building for building in self.buildings if building.building_id > previous_state_building_id_max]
+
+        for building in self.buildings:
+            building_id = building.building_id
+            old_building = [building for building in previous_state_buildings if building.building_id == building_id]
+            if len(old_building) == 1:
+                old_building = old_building[0]
+                if not building.equals(old_building):
+                    changed_buildings.append(building)
+        """
+
+        new_units, changed_units, deleted_units = get_new_changed_deleted(self.units, old_state["units"], lambda u: u.unit_id)
+        new_traps, changed_traps, deleted_traps = get_new_changed_deleted(self.traps, old_state["traps"], lambda t: t.trap_id)
+        new_buildings, changed_buildings, deleted_buildings = get_new_changed_deleted(self.buildings, old_state["buildings"], lambda b: b.building_id)
 
         (hp, money) = old_state["players"]["player1"]
         if (hp != self.game.player1.health_points) or (money != self.game.player1.money):
@@ -225,15 +258,18 @@ class GameState(object):
         if (hp != self.game.player2.health_points) or (money != self.game.player2.money):
             players.append(self.game.player2)
 
+        logger.info("Changed units: %s", json.dumps([u.to_dict() for u in changed_units]))
+
         return {
             "action": "changed_game_state",
             "changed_units": [unit.to_dict() for unit in changed_units],
             "deleted_units": [unit.to_dict() for unit in deleted_units],
             "new_units": [unit.to_dict() for unit in new_units],
-            "changed_traps": [unit.to_dict() for unit in changed_traps],
-            "deleted_traps": [unit.to_dict() for unit in deleted_traps],
+            "changed_traps": [trap.to_dict() for trap in changed_traps],
+            "deleted_traps": [trap.to_dict() for trap in deleted_traps],
             "new_traps": [trap.to_dict() for trap in new_traps],
-            "new_buildings": [unit.to_dict() for unit in new_buildings],
+            "new_buildings": [building.to_dict() for building in new_buildings],
+            "changed_buildings": [building.to_dict() for building in changed_buildings],
             "changed_players": [player.to_dict() for player in players]
         }
 
@@ -304,21 +340,25 @@ class GameState(object):
                     y -= MAP_SIZE_Y
                     unit.set_new_position([x, y])
 
+    def tick_buildings(self):
+        for building in self.buildings:
+            building.tick(self.get_player_by_id(building.owner))
+
     def apply_field_effects(self):
         for unit in self.units:
             (x, y) = unit.position
-            if (unit.player == self.game.player1.player_id) and (x == MAP_SIZE_X-2):
+            if (unit.owner == self.game.player1.player_id) and (x == MAP_SIZE_X-2):
                 self.game.player2.add_money(unit.bounty)
                 self.game.player2.lose_health_points()
                 self.units.remove(unit)
-            elif (unit.player == self.game.player2.player_id) and (x == 1):
+            elif (unit.owner == self.game.player2.player_id) and (x == 1):
                 self.game.player1.add_money(unit.bounty)
                 self.game.player1.lose_health_points()
                 self.units.remove(unit)
             else:
                 trap = self.map[x][y]
                 if (trap is not None) and (trap.owner != unit.owner):
-                    trap.handleUnit(unit, self.get_player_by_id(unit.owner))
+                    trap.handle_unit(unit, self.get_player_by_id(unit.owner))
                     if unit.hp <= 0:
                         self.units.remove(unit)
                     if trap.has_durability and trap.durability <= 0:
