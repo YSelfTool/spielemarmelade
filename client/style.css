@@ -20,6 +20,16 @@ body {
         2px 2px #000;
 }
 
+.header h3 {
+    color: lightcoral;
+    font-size: 24px;
+    font-family: serif;
+    text-shadow: -1px -1px #000,
+        1px -1px #000,
+        -1px 1px #000,
+        1px 1px #000;
+}
+
 .central div {
     display: inline-block;
 }
