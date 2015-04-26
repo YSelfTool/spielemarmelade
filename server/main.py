@@ -127,8 +127,7 @@ def simulate_game(the_game):
     while the_game.running:
         logger.debug("Updating game named %s", the_game.name)
         the_game.state.tick()
-        yield from asyncio.sleep(0.5)
-        # yield from asyncio.sleep(5)
+        yield from asyncio.sleep(game.GAME_SPEED)
     logger.info("The game named %s is done", the_game.name)
     player1_still_here = the_game.player1.player_id in player_id_to_game
     player2_still_here = the_game.player2.player_id in player_id_to_game

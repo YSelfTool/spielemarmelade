@@ -10,6 +10,7 @@ import units
 
 MAP_SIZE_X = 32
 MAP_SIZE_Y = 16
+GAME_SPEED = 1 / 4
 
 
 class Game(object):
@@ -181,70 +182,7 @@ class GameState(object):
 
     # changes after each tick
     def send_state_delta(self, old_state):
-        changed_traps = []
-        changed_buildings = []
         players = []
-
-        """
-        previous_state_units = old_state["units"]
-        old_units_id_max = 0
-        for old_unit in previous_state_units:
-            if old_unit.unit_id > old_units_id_max:
-                old_units_id_max = old_unit.unit_id
-
-        unit_to_id = lambda unit: unit.unit_id
-        current_state_unit_ids = map(unit_to_id, self.units)
-        previous_state_unit_ids = map(unit_to_id, previous_state_units)
-        new_units = list(filter(lambda unit: unit.unit_id not in previous_state_unit_ids, self.units))
-        deleted_units = list(filter(lambda unit: unit.unit_id not in current_state_unit_ids, previous_state_units))
-
-        for unit in self.units:
-            unit_id = unit.unit_id
-            old_unit = [unit for unit in previous_state_units if unit.unit_id == unit_id]
-            if len(old_unit) == 1:
-                old_unit = old_unit[0]
-                if not unit.equals(old_unit):
-                    changed_units.append(unit)
-
-
-        previous_state_traps = old_state["traps"]
-        trap_to_id = lambda trap: trap.trap_id
-        current_trap_ids = map(trap_to_id, self.traps)
-        previous_state_trap_ids = map(trap_to_id, previous_state_traps)
-        new_traps = list(filter(lambda trap: trap.trap_id not in previous_state_trap_ids, self.traps))
-        deleted_traps = list(filter(lambda trap: trap.trap_id not in current_trap_ids, previous_state_traps))
-
-        new_trap_ids = map(trap_to_id, new_traps)
-        deleted_trap_ids = map(trap_to_id, deleted_traps)
-        candidate_trap_filter = lambda trap: (trap.trap_id not in new_trap_ids) or (trap.trap_id not in deleted_trap_ids)
-        candidate_traps = list(filter(candidate_trap_filter, self.traps))
-
-        for trap in candidate_traps:
-            trap_id = trap.trap_id
-            old_trap = [trap for trap in previous_state_traps if trap.trap_id == trap_id]
-            if len(old_trap) == 1:
-                old_trap = old_trap[0]
-                if not trap.equals(old_trap):
-                    changed_traps.append(trap)
-            else:
-                logger.debug("More than one trap with the same id found. Wat. (%s)", old_trap)
-
-        previous_state_buildings = old_state["buildings"]
-        previous_state_building_id_max = 0
-        for old_building in previous_state_buildings:
-            if old_building.building_id > previous_state_building_id_max:
-                previous_state_building_id_max = old_building.building_id
-
-        new_buildings = [building for building in self.buildings if building.building_id > previous_state_building_id_max]
-
-        for building in self.buildings:
-            building_id = building.building_id
-            old_building = [building for building in previous_state_buildings if building.building_id == building_id]
-            if len(old_building) == 1:
-                old_building = old_building[0]
-                if not building.equals(old_building):
-                    changed_buildings.append(building)
-        """
 
         new_units, changed_units, deleted_units = get_new_changed_deleted(self.units, old_state["units"], lambda u: u.unit_id)
         new_traps, changed_traps, deleted_traps = get_new_changed_deleted(self.traps, old_state["traps"], lambda t: t.trap_id)
@@ -257,8 +195,6 @@ class GameState(object):
         (hp, money) = old_state["players"]["player2"]
         if (hp != self.game.player2.health_points) or (money != self.game.player2.money):
             players.append(self.game.player2)
-
-        logger.info("Changed units: %s", json.dumps([u.to_dict() for u in changed_units]))
 
         return {
             "action": "changed_game_state",
