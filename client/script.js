@@ -318,9 +318,7 @@ function showInfo(title, content) {
 
 function removeIdsFromArray(array, ids) {
     if (ids.length > 0) {
-        console.log("Trying to remove " + ids.length + " things");
         var remids = [];
-        console.log(ids);
         for (var j = 0; j < array.length; j++) {
             if (ids.indexOf(array[j].id) != -1) {
                 remids.push(j);
