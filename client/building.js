@@ -1,5 +1,6 @@
 
-function Building(img, player, pos, size, kind, subkind) {
+function Building(id, img, player, pos, size, kind, subkind) {
+    this.id = id;
     this.img = img;
     this.player = player;
     this.position = pos;
@@ -8,7 +9,7 @@ function Building(img, player, pos, size, kind, subkind) {
     this.subkind = subkind;
 }
 Building.prototype.draw = function(ctx, tileSize, imgloader) {
-    ctx.drawImage(this.img, this.position.x * tileSize, this.position.y * tileSize);
+    ctx.drawImage(this.img, this.position.x * tileSize, this.position.y * tileSize, tileSize * this.size.x, tileSize * this.size.y);
 };
 
 function BuildingImage(imgloader, kind) {

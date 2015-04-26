@@ -1,5 +1,6 @@
 
-function Unit(player, pos, kind, upgrades, health, bounty, trapwear) {
+function Unit(id, player, pos, kind, upgrades, health, bounty, trapwear) {
+    this.id = id;
     this.player = player;
     this.position = pos;
     this.kind = kind;
