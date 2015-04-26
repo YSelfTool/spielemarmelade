@@ -105,11 +105,11 @@ class CatapultTrap(Trap):
         self.durability -= unit.trap_wear
         unit.hp -= 1
         (x, y) = unit.position
-        new_x = x - unit.direction * self.range
+        new_x = x - (unit.direction * self.range)
         if (unit.direction == -1) and (new_x < 2):
             new_x = 2
-        elif (unit.direction == 1) and (new_x > game.MAP_SIZE_X-2):
-            new_x = game.MAP_SIZE_X-2
+        elif (unit.direction == 1) and (new_x > game.MAP_SIZE_X-3):
+            new_x = game.MAP_SIZE_X-3
 
         unit.position[0] = new_x
 
