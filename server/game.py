@@ -20,6 +20,8 @@ class Game(object):
         self.player2 = None
         self.running = False
         self.state = None
+        self.winner = None
+        self.loser = None
 
 
 def get_new_changed_deleted(current, previous, id_lambda):
@@ -168,7 +170,27 @@ class GameState(object):
                 continue
 
         self.apply_field_effects()
-        self.do_send_data(self.send_state_delta(old_state))
+
+        winners = []
+        if self.game.player1.health_points == 0:
+            winners.append(player2)
+            self.game.winner = player2
+            self.game.loser = player1
+        if self.game.player2.health_points == 0:
+            winners.append(player1)
+            self.game.winner = player1
+            self.game.loser = player2
+        if len(winners) > 0:
+            self.game.running = False
+            if len(winners) == 2:
+                if random() % 2 = 0:
+                    self.game.winner = winners[0]
+                    self.game.loser = winners[1]
+                else:
+                    self.game.winner = winners[1]
+                    self.game.loser = winners[0]
+        else:
+            self.do_send_data(self.send_state_delta(old_state))
 
     # initial state
     def send_full_state(self):
