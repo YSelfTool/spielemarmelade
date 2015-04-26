@@ -33,9 +33,11 @@ class Building(object):
     def tick(self, player):
         pass
 
+
 class Headquaters(Building):
     def __init__(self, building_id, owner, position):
         super().__init__(building_id, BUILDING_HQ, (1, 4), owner, position)
+        self.income_per_tick=10
 
     def __repr__(self):
         return "<Headquaters: Id={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.size, self.owner, self.position, self.upgrades)
@@ -44,7 +46,12 @@ class Headquaters(Building):
         return Headquaters(self.building_id, self.owner, self.position)
 
     def tick(self, player):
-        player.add_money(10)
+        player.add_money(self.income_per_tick)
+
+    def to_dict(self):
+        d = super().to_dict()
+        d["income_per_tick"] = self.income_per_tick
+        return d
 
 
 class Spawner(Building):
@@ -74,6 +81,8 @@ class Spawner(Building):
     def to_dict(self):
         d = super().to_dict()
         d["mob_kind"] = self.mob_kind
+        d["cooldown_ticks"] = self.cooldown_ticks
+        d["current_cooldown"] = self.current_cooldown
         return d
 
     def tick(self, player):
