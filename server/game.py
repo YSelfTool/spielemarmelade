@@ -9,10 +9,12 @@ logger.setLevel(logging.INFO)
 import buildings
 import traps
 import units
+import game_object
 
 MAP_SIZE_X = 32
 MAP_SIZE_Y = 16
-GAME_SPEED = 1 / 4
+GAME_SPEED = 1 / 8
+PLACEMENT_RADIUS_IN_TILES = 2
 
 
 class Game(object):
@@ -24,6 +26,10 @@ class Game(object):
         self.state = None
         self.winner = None
         self.loser = None
+
+
+def clamp(the_min, the_value, the_max):
+    return max(the_min, min(the_max, the_value))
 
 
 def get_new_changed_deleted(current, previous, id_lambda):
@@ -44,30 +50,22 @@ def get_new_changed_deleted(current, previous, id_lambda):
     return new_things, changed_things, deleted_things
 
 
-def get_building_bounds(building):
-    building_x_start = building.position[0]
-    building_y_start = building.position[1]
-    if isinstance(building, traps.Trap):
-        building_x_stop = building_x_start + 1
-        building_y_stop = building_y_start + 1
-    else:
-        building_x_stop = building_x_start + building.size[0]
-        building_y_stop = building_y_start + building.size[1]
+def get_placeable_bounds(placeable):
+    placeable_x_start = placeable.position[0]
+    placeable_y_start = placeable.position[1]
+    placeable_x_stop = placeable_x_start + placeable.size[0]
+    placeable_y_stop = placeable_y_start + placeable.size[1]
 
-    return building_x_start, building_x_stop, building_y_start, building_y_stop
+    return placeable_x_start, placeable_x_stop, placeable_y_start, placeable_y_stop
 
 
-def get_building_bounds_at_position(building, position):
-    building_x_start = position[0]
-    building_y_start = position[1]
-    if isinstance(building, traps.Trap):
-        building_x_stop = building_x_start + 1
-        building_y_stop = building_y_start + 1
-    else:
-        building_x_stop = building_x_start + building.size[0]
-        building_y_stop = building_y_start + building.size[1]
+def get_placeable_bounds_at_position(placeable, position):
+    placeable_x_start = position[0]
+    placeable_y_start = position[1]
+    placeable_x_stop = placeable_x_start + placeable.size[0]
+    placeable_y_stop = placeable_y_start + placeable.size[1]
 
-    return building_x_start, building_x_stop, building_y_start, building_y_stop
+    return placeable_x_start, placeable_x_stop, placeable_y_start, placeable_y_stop
 
 
 class GameState(object):
@@ -77,22 +75,22 @@ class GameState(object):
         self.units = []
         self.traps = []
         self.buildings = []
-        self.unit_id_counter = 1
-        self.trap_id_counter = 1
-        self.building_id_counter = 1
+        self.id_counter = 1
         self.action_buffer = []
         self.spawn_headquaters()
 
     def place_building_in_map(self, building):
-        (x1, x2, y1, y2) = get_building_bounds(building)
+        (x1, x2, y1, y2) = get_placeable_bounds(building)
 
         for x in range(x1, x2):
             for y in range(y1, y2):
                 self.map[x][y] = building
 
-    def can_place_building_at(self, building, position):
-        (x1, x2, y1, y2) = get_building_bounds_at_position(building, position)
+    def can_place_building_at(self, building, position, player):
+        logger.debug("Checking wether we can place a placeable at %s", position)
+        (x1, x2, y1, y2) = get_placeable_bounds_at_position(building, position)
         if (x1 < 0) or (x2 > MAP_SIZE_X) or (y1 < 0) or (y1 > MAP_SIZE_Y):  # don't place out of bounds
+            logger.debug("trying to place something out of bounds...")
             return False
 
         can_place = True
@@ -103,13 +101,31 @@ class GameState(object):
                     break
             if not can_place:
                 break
+
+        if can_place:
+            can_place = False
+            spawn_radius_check_x1 = clamp(0, x1 - PLACEMENT_RADIUS_IN_TILES, MAP_SIZE_X - 1)
+            spawn_radius_check_x2 = clamp(spawn_radius_check_x1, x2 + PLACEMENT_RADIUS_IN_TILES, MAP_SIZE_X - 1)
+            spawn_radius_check_y1 = clamp(0, y1 - PLACEMENT_RADIUS_IN_TILES, MAP_SIZE_Y - 1)
+            spawn_radius_check_y2 = clamp(spawn_radius_check_y1, y2 + PLACEMENT_RADIUS_IN_TILES, MAP_SIZE_Y - 1)
+
+            for x in range(spawn_radius_check_x1, spawn_radius_check_x2+1):
+                for y in range(spawn_radius_check_y1, spawn_radius_check_y2+1):
+                    tile = self.map[x][y]
+                    can_place = (tile is not None) and (tile.owner == player.player_id)
+                    if can_place:
+                        break
+                if can_place:
+                        break
+
+        logger.debug("We can place it? %s", can_place)
         return can_place
 
     def spawn_headquaters(self):
-        hq_player1 = buildings.Headquaters(self.get_next_building_id(), self.game.player1.player_id, (0, int(MAP_SIZE_Y / 2 - 2)))
+        hq_player1 = buildings.Headquaters(self.get_next_id(), self.game.player1.player_id, (0, int(MAP_SIZE_Y / 2 - 2)))
         self.buildings.append(hq_player1)
         logger.debug("Spawning headquaters for player %s in map at %s", self.game.player1.name, hq_player1.position)
-        hq_player2 = buildings.Headquaters(self.get_next_building_id(), self.game.player2.player_id, (MAP_SIZE_X-1, int(MAP_SIZE_Y / 2 - 2)))
+        hq_player2 = buildings.Headquaters(self.get_next_id(), self.game.player2.player_id, (MAP_SIZE_X-1, int(MAP_SIZE_Y / 2 - 2)))
         self.buildings.append(hq_player2)
         logger.debug("Spawning headquaters for player %s in map at %s", self.game.player2.name, hq_player2.position)
 
@@ -120,8 +136,9 @@ class GameState(object):
         (x, y) = msg["position"]
         kind = msg["kind"]
         owner = player.player_id
-        spawner = buildings.Spawner(self.get_next_building_id(), owner, (x, y), kind, 1, 10)
-        if self.can_place_building_at(spawner, (x, y)):
+        logger.debug("%s is trying to spawn spawner", player.name)
+        spawner = buildings.Spawner(self.get_next_id(), owner, (x, y), kind, 1, 10)
+        if self.can_place_building_at(spawner, (x, y), player) and self.pay_for(player, spawner):
             logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(spawner)
             self.buildings.append(spawner)
@@ -130,8 +147,8 @@ class GameState(object):
         (x, y) = msg["position"]
         kind = msg["kind"]
         owner = player.player_id
-        trap = traps.lookup[kind](self.get_next_trap_id(), owner, (x, y))
-        if self.can_place_building_at(trap, (x, y)):
+        trap = traps.lookup[kind](self.get_next_id(), owner, (x, y))
+        if self.can_place_building_at(trap, (x, y), player) and self.pay_for(player, trap):
             logger.debug("Spawning trap of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(trap)
             self.traps.append(trap)
@@ -145,8 +162,17 @@ class GameState(object):
         mob_pos = [spawner.position[0], spawner.position[1]]
         mob_pos[0] += player.direction
         for n in range(spawner.num_mobs):
-            mob = units.lookup[spawner.mob_kind](self.get_next_unit_id(), player.player_id, mob_pos, [], player.direction)
-            self.units.append(mob)
+            mob = units.lookup[spawner.mob_kind](self.get_next_id(), player.player_id, mob_pos, [], player.direction)
+            if self.pay_for(player, mob):
+                self.units.append(mob)
+
+    def pay_for(self, player, obj):
+        if obj.__class__ in game_object.cost_lookup:
+            _, _, cost = game_object.cost_lookup[obj.__class__]
+            if player.money >= cost:
+                player.add_money(-cost)
+                return True
+        return False
 
     # update game state
     def tick(self):
@@ -167,7 +193,7 @@ class GameState(object):
             elif action == "trigger_spawner":
                 (x, y) = msg["position"]
                 spawner_id = msg["spawner_id"]
-                if isinstance(self.map[x][y], buildings.Spawner) and (self.map[x][y].building_id == spawner_id):
+                if isinstance(self.map[x][y], buildings.Spawner) and (self.map[x][y].object_id == spawner_id):
                     self.trigger_spawner(self.map[x][y], player)
             else:
                 logger.warning("Unknown action %s in action buffer, ignoring.", action)
@@ -184,10 +210,11 @@ class GameState(object):
             winners.append(self.game.player1)
             self.game.winner = self.game.player1
             self.game.loser = self.game.player2
+
         if len(winners) > 0:
             self.game.running = False
             if len(winners) == 2:
-                if random.randint(0,1) == 0:
+                if random.randint(0, 1) == 0:
                     self.game.winner = winners[0]
                     self.game.loser = winners[1]
                 else:
@@ -210,9 +237,9 @@ class GameState(object):
     def send_state_delta(self, old_state):
         players = []
 
-        new_units, changed_units, deleted_units = get_new_changed_deleted(self.units, old_state["units"], lambda u: u.unit_id)
-        new_traps, changed_traps, deleted_traps = get_new_changed_deleted(self.traps, old_state["traps"], lambda t: t.trap_id)
-        new_buildings, changed_buildings, deleted_buildings = get_new_changed_deleted(self.buildings, old_state["buildings"], lambda b: b.building_id)
+        new_units, changed_units, deleted_units = get_new_changed_deleted(self.units, old_state["units"], lambda u: u.object_id)
+        new_traps, changed_traps, deleted_traps = get_new_changed_deleted(self.traps, old_state["traps"], lambda t: t.object_id)
+        new_buildings, changed_buildings, deleted_buildings = get_new_changed_deleted(self.buildings, old_state["buildings"], lambda b: b.object_id)
 
         (hp, money) = old_state["players"]["player1"]
         if (hp != self.game.player1.health_points) or (money != self.game.player1.money):
@@ -248,19 +275,9 @@ class GameState(object):
             logger.info("Unknown action %s from player %s", action, player.name)
         return ok
 
-    def get_next_unit_id(self):
-        tmp = self.unit_id_counter
-        self.unit_id_counter += 1
-        return tmp
-
-    def get_next_trap_id(self):
-        tmp = self.trap_id_counter
-        self.trap_id_counter += 1
-        return tmp
-
-    def get_next_building_id(self):
-        tmp = self.building_id_counter
-        self.building_id_counter += 1
+    def get_next_id(self):
+        tmp = self.id_counter
+        self.id_counter += 1
         return tmp
 
     def save_game_state(self):
@@ -329,4 +346,3 @@ class GameState(object):
                     elif isinstance(trap, traps.PitfallTrap) and (trap.mobs_in_trap == trap.capacity):
                         self.traps.remove(trap)
                         self.map[x][y] = None
-

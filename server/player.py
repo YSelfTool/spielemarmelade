@@ -8,7 +8,7 @@ class Player(object):
         self.player_id = player_id
         self.token = token
         self.socket = socket
-        self.money = 0
+        self.money = 500
         self.health_points = 20
         self.direction = None  # 1 = left , -1=right
         pass
