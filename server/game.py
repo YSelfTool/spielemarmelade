@@ -6,6 +6,7 @@ logger.setLevel(logging.INFO)
 
 import buildings
 import traps
+import units
 
 MAP_SIZE_X = 32
 MAP_SIZE_Y = 16
@@ -106,9 +107,19 @@ class GameState(object):
         owner = player.player_id
         trap = traps.lookup[kind](self.get_next_trap_id(), owner, (x, y))
         if self.can_place_building_at(trap, (x, y)):
-            logger.debug("Spawning trap of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
+            logger.info("Spawning trap of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(trap)
             self.traps.append(trap)
+
+    def trigger_spawner(self, spawner, player):
+        if not spawner.can_spawn():
+            return
+        spawner.reset_cooldown()
+        mob_pos = spawner.position
+        mob_pos[0] += player.direction
+        for n in range(spawner.num_mobs):
+            mob = units.lookup[spawner.mob_kind](self.get_next_unit_id(), player.player_id, mob_pos, [], player.direction)
+            self.units.append(mob)
 
     # update game state
     def tick(self):
@@ -125,6 +136,11 @@ class GameState(object):
                 self.spawn_spawner(msg, player)
             elif action == "place_trap":
                 self.spawn_trap(msg, player)
+            elif action == "trigger_spawner":
+                (x, y) = msg["position"]
+                spawner_id = msg["spawner_id"]
+                if isinstance(self.map[x][y], buildings.Spawner) and (self.map[x][y].building_id == spawner_id):
+                    self.trigger_spawner(self.map[x][y], player)
             else:
                 logger.warning("Unknown action %s in action buffer, ignoring.", action)
                 continue
