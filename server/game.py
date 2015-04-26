@@ -28,6 +28,7 @@ class GameState(object):
         self.traps = []
         self.buildings = []
         self.unit_id_counter = 1
+        self.trap_id_counter = 1
         self.action_buffer = []
         self.spawn_headquaters()
 
@@ -86,6 +87,16 @@ class GameState(object):
             self.place_building_in_map(spawner)
             self.buildings.append(spawner)
 
+    def spawn_trap(self, msg, player):
+        (x, y) = msg["position"]
+        kind = msg["kind"]
+        owner = player.player_id
+        trap = traps.lookup[kind](self.get_next_trap_id(), owner, (x, y))
+        if self.can_place_building_at(trap, (x, y)):
+            logger.debug("Spawning trap of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
+            self.place_building_in_map(trap)
+            self.buildings.append(trap)
+
     # after each round
     def tick(self):
         old_state = self.save_game_state()
@@ -98,6 +109,8 @@ class GameState(object):
             action = msg["action"]
             if action == "place_spawner":
                 self.spawn_spawner(msg, player)
+            elif action == "place_trap":
+                self.spawn_trap(msg, player)
             else:
                 logger.warning("Unknown action %s in action buffer, ignoring.", action)
                 continue
@@ -133,6 +146,8 @@ class GameState(object):
         logger.debug("Handeling message with action %s for player %s ", action, player.name)
         if action == "place_spawner":
             ok = True
+        elif action == "place_trap":
+            ok = True
 
         if ok:
             logger.debug("Placing message from player %s in buffer for next tick", player.name)
@@ -142,6 +157,11 @@ class GameState(object):
     def get_next_unit_id(self):
         tmp = self.unit_id_counter
         self.unit_id_counter += 1
+        return tmp
+
+    def get_next_trap_id(self):
+        tmp = self.trap_id_counter
+        self.trap_id_counter += 1
         return tmp
 
     def save_game_state(self):
@@ -160,6 +180,14 @@ class GameState(object):
         json_str = json.dumps(data)
         asyncio.async(self.game.player1.socket.send(json_str))
         asyncio.async(self.game.player2.socket.send(json_str))
+
+    def get_player_by_id(self, player_id):
+        if self.game.player1.player_id == player_id:
+            return self.game.player1
+        elif self.game.player2.player_id == player_id:
+            return self.game.player2
+        else:
+            logger.error("Trying to get unknown player by id %s", player_id)
 
     def move_units(self):
         for unit in self.units:
@@ -188,8 +216,8 @@ class GameState(object):
                 self.units.remove(unit)
             else:
                 trap = self.map[x][y]
-                if trap is not None:
-                    trap.handleUnit(unit)
+                if (trap is not None) and (trap.owner != unit.owner):
+                    trap.handleUnit(unit, self.get_player_by_id(unit.owner))
                     if unit.hp <= 0:
                         self.units.remove(unit)
                     if trap.has_durability and trap.durability <= 0:
