@@ -1,4 +1,5 @@
 import json
+import random
 import asyncio
 import copy
 import logging
@@ -21,6 +22,8 @@ class Game(object):
         self.player2 = None
         self.running = False
         self.state = None
+        self.winner = None
+        self.loser = None
 
 
 def get_new_changed_deleted(current, previous, id_lambda):
@@ -171,7 +174,27 @@ class GameState(object):
                 continue
 
         self.apply_field_effects()
-        self.do_send_data(self.send_state_delta(old_state))
+
+        winners = []
+        if self.game.player1.health_points == 0:
+            winners.append(self.game.player2)
+            self.game.winner = self.game.player2
+            self.game.loser = self.game.player1
+        if self.game.player2.health_points == 0:
+            winners.append(self.game.player1)
+            self.game.winner = self.game.player1
+            self.game.loser = self.game.player2
+        if len(winners) > 0:
+            self.game.running = False
+            if len(winners) == 2:
+                if random.randint(0,1) == 0:
+                    self.game.winner = winners[0]
+                    self.game.loser = winners[1]
+                else:
+                    self.game.winner = winners[1]
+                    self.game.loser = winners[0]
+        else:
+            self.do_send_data(self.send_state_delta(old_state))
 
     # initial state
     def send_full_state(self):
@@ -286,11 +309,11 @@ class GameState(object):
     def apply_field_effects(self):
         for unit in self.units:
             (x, y) = unit.position
-            if (unit.owner == self.game.player1.player_id) and (x == MAP_SIZE_X-2):
+            if (unit.owner == self.game.player1.player_id) and (x >= MAP_SIZE_X-2):
                 self.game.player2.add_money(unit.bounty)
                 self.game.player2.lose_health_points()
                 self.units.remove(unit)
-            elif (unit.owner == self.game.player2.player_id) and (x == 1):
+            elif (unit.owner == self.game.player2.player_id) and (x <= 1):
                 self.game.player1.add_money(unit.bounty)
                 self.game.player1.lose_health_points()
                 self.units.remove(unit)
