@@ -29,6 +29,7 @@ class GameState(object):
         self.buildings = []
         self.unit_id_counter = 1
         self.trap_id_counter = 1
+        self.building_id_counter = 1
         self.action_buffer = []
         self.spawn_headquaters()
 
@@ -77,9 +78,9 @@ class GameState(object):
         return can_place
 
     def spawn_headquaters(self):
-        hq_player1 = buildings.Headquaters(self.game.player1.player_id, (0, int(MAP_SIZE_Y/2-2)))
+        hq_player1 = buildings.Headquaters(self.get_next_building_id(), self.game.player1.player_id, (0, int(MAP_SIZE_Y/2-2)))
         self.buildings.append(hq_player1)
-        hq_player2 = buildings.Headquaters(self.game.player2.player_id, (MAP_SIZE_X-1, int(MAP_SIZE_Y/2-2)))
+        hq_player2 = buildings.Headquaters(self.get_next_building_id(), self.game.player2.player_id, (MAP_SIZE_X-1, int(MAP_SIZE_Y/2-2)))
         self.buildings.append(hq_player2)
 
         self.place_building_in_map(hq_player1)
@@ -89,7 +90,7 @@ class GameState(object):
         (x, y) = msg["position"]
         kind = msg["kind"]
         owner = player.player_id
-        spawner = buildings.Spawner(owner, (x, y), kind)
+        spawner = buildings.Spawner(self.get_next_building_id(), owner, (x, y), kind)
         if self.can_place_building_at(spawner, (x, y)):
             logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(spawner)
@@ -107,9 +108,10 @@ class GameState(object):
 
     # update game state
     def tick(self):
-        old_state = self.save_game_state()
         the_actions = self.action_buffer.copy()
         self.action_buffer = []
+
+        old_state = self.save_game_state()
 
         self.move_units()
 
@@ -124,7 +126,7 @@ class GameState(object):
                 continue
 
         self.apply_field_effects()
-        self.send_state_delta(old_state)
+        self.do_send_data(self.send_state_delta(old_state))
 
     # initial state
     def send_full_state(self):
@@ -140,7 +142,7 @@ class GameState(object):
     def send_state_delta(self, old_state):
         changed_units = []
         changed_traps = []
-        # changed_buildings = []
+        changed_buildings = []
         players = []
 
         old_units = old_state["units"]
@@ -169,6 +171,8 @@ class GameState(object):
 
         old_buildings = old_state["buildings"]
         new_buildings = [building for building in self.buildings if building not in old_buildings]
+        print("old_buildings:",old_buildings)
+        print("new_buildings:",new_buildings)
 
         (hp, money) = old_state["players"]["player1"]
         if (hp != self.game.player1.health_points) or (money != self.game.player1.money):
@@ -179,6 +183,7 @@ class GameState(object):
             players.append(self.game.player2)
 
         return {
+            "action": "changed_game_state",
             "changed_units": [unit.to_dict() for unit in changed_units],
             "deleted_units": [unit.to_dict() for unit in deleted_units],
             "new_units": [unit.to_dict() for unit in new_units],
@@ -211,6 +216,11 @@ class GameState(object):
     def get_next_trap_id(self):
         tmp = self.trap_id_counter
         self.trap_id_counter += 1
+        return tmp
+
+    def get_next_building_id(self):
+        tmp = self.building_id_counter
+        self.building_id_counter += 1
         return tmp
 
     def save_game_state(self):
