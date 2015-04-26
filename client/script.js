@@ -17,8 +17,9 @@ function draw() {
     if (state == "running")
         requestAnimationFrame(draw);
     if (map) {
-        map.draw(ctx, tileSize, imgloader);
+        map.draw(ctx, tileSize, imgloader, player);
     }
+    ctx.globalAlpha = 0.5;
     for (var i = 0; i < cache.buildingCache.length; i++) {
         var building = cache.buildingCache[i];
         building.draw(ctx, tileSize, imgloader);
@@ -178,6 +179,9 @@ function changedGameStateHandler(data) {
             if (pl != null) {
                 pl.hp = p.hp;
                 pl.money = p.money;
+                if (pl == player) {
+                    showPlayerInfo(player);
+                }
             }
         }
     }
@@ -207,19 +211,21 @@ function triggerSpawner(spawner) {
 }
 
 function canvasClickHandler(canvasPos) {
-    var mapPos = canvasPos.div(tileSize).floor();
-    if (currentlyBuilding == "building") {
-        if (currentBuildingType == BUILDING_SPAWNER && mapPos.x == player.spawnerLane()) {
-            placeSpawner(mapPos);
-        }
-    } else if (currentlyBuilding == "trap") {
-        if (mapPos.x >= 2 && mapPos.x < map.size.x - 2)
-            placeTrap(mapPos);
-    } else {
-        if (mapPos.x == player.spawnerLane()) {
-            var b = map.buildingByPos(mapPos);
-            if (b != null)
-                triggerSpawner(b);
+    if (state == "running") {
+        var mapPos = canvasPos.div(tileSize).floor();
+        if (currentlyBuilding == "building") {
+            if (currentBuildingType == BUILDING_SPAWNER && mapPos.x == player.spawnerLane()) {
+                placeSpawner(mapPos);
+            }
+        } else if (currentlyBuilding == "trap") {
+            if (mapPos.x >= 2 && mapPos.x < map.size.x - 2)
+                placeTrap(mapPos);
+        } else {
+            if (mapPos.x == player.spawnerLane()) {
+                var b = map.buildingByPos(mapPos);
+                if (b != null)
+                    triggerSpawner(b);
+            }
         }
     }
 }
@@ -261,10 +267,24 @@ window.onload=function() {
     document.getElementById("known-building-spawner-soldier").onclick = function(e) {
         spawnerBuildingClick(UNIT_SOLDIER);
     };
-    document.getElementById("known-building-cancel").onclick = function(e) {
-        currentlyBuilding = null;
-        showCancelInfo();
-    }
+    document.getElementById("known-building-spawner-jumper").onclick = function(e) {
+        spawnerBuildingClick(UNIT_JUMPER);
+    };
+    document.getElementById("known-building-spawner-runner").onclick = function(e) {
+        spawnerBuildingClick(UNIT_RUNNER);
+    };
+    document.getElementById("known-building-spawner-tank").onclick = function(e) {
+        spawnerBuildingClick(UNIT_TANK);
+    };
+    document.getElementById("known-building-spawner-crooked").onclick = function(e) {
+        spawnerBuildingClick(UNIT_CROOKEDSOLDIER);
+    };
+    document.getElementById("known-building-spawner-topstep").onclick = function(e) {
+        spawnerBuildingClick(UNIT_TOPSTEPSOLDIER);
+    };
+    document.getElementById("known-building-spawner-bottomstep").onclick = function(e) {
+        spawnerBuildingClick(UNIT_BOTTOMSTEPSOLDIER);
+    };
     document.getElementById("known-traps-pitfall").onclick = function(e) {
         trapBuildingClick(TRAP_PITFALL);
     }
@@ -276,6 +296,10 @@ window.onload=function() {
     }
     document.getElementById("known-traps-looting").onclick = function(e) {
         trapBuildingClick(TRAP_LOOT);
+    }
+    document.getElementById("known-building-cancel").onclick = function(e) {
+        currentlyBuilding = null;
+        showCancelInfo();
     }
 };
 
@@ -326,7 +350,6 @@ function removeIdsFromArray(array, ids) {
         }
         console.log(remids);
         for (var i = remids.length - 1; i >= 0; i--) {
-            console.log("removing thing");
             array.splice(remids[i], 1);
         }
     }

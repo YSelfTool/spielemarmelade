@@ -60,7 +60,15 @@ body {
 
 .infospace {
     /*border: 1px solid black;*/
-    max-width: 200px;
+    max-width: 300px;
+}
+
+.infospace {
+    text-align: left;
+}
+
+.infospace div {
+    margin: 10px;
 }
 
 .footer-message {
