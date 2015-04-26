@@ -66,6 +66,8 @@ class GameState(object):
 
     def can_place_building_at(self, building, position):
         (x1, x2, y1, y2) = self.get_building_bounds_at_position(building, position)
+        if (x1 < 0) or (x2 > MAP_SIZE_X) or (y1 < 0) or (y1 > MAP_SIZE_Y):  # don't place out of bounds
+            return False
 
         can_place = True
         for x in range(x1, x2):
@@ -80,8 +82,10 @@ class GameState(object):
     def spawn_headquaters(self):
         hq_player1 = buildings.Headquaters(self.get_next_building_id(), self.game.player1.player_id, (0, int(MAP_SIZE_Y/2-2)))
         self.buildings.append(hq_player1)
+        logger.info("Spawning headquaters for player %s in map at %s", self.game.player1.name, hq_player1.position)
         hq_player2 = buildings.Headquaters(self.get_next_building_id(), self.game.player2.player_id, (MAP_SIZE_X-1, int(MAP_SIZE_Y/2-2)))
         self.buildings.append(hq_player2)
+        logger.info("Spawning headquaters for player %s in map at %s", self.game.player2.name, hq_player2.position)
 
         self.place_building_in_map(hq_player1)
         self.place_building_in_map(hq_player2)
@@ -92,7 +96,7 @@ class GameState(object):
         owner = player.player_id
         spawner = buildings.Spawner(self.get_next_building_id(), owner, (x, y), kind)
         if self.can_place_building_at(spawner, (x, y)):
-            logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
+            logger.info("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(spawner)
             self.buildings.append(spawner)
 

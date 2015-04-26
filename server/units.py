@@ -54,6 +54,7 @@ class Unit(object):
             return False
         return True
 
+
 class UnitSolider(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         speed = 3
@@ -62,3 +63,5 @@ class UnitSolider(Unit):
     def get_next_position(self):
         (x, y) = self.position
         return x + self.direction, y
+
+lookup = {UNIT_SOLIDER: UnitSolider}

@@ -6,6 +6,7 @@ TRAP_LOOT = 3
 import game
 import logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class Trap(object):
@@ -17,6 +18,9 @@ class Trap(object):
         self.upgrades = []
         self.durability = durability
         self.has_durability = has_durability
+
+    def __repr__(self):
+        return "<Trap: Id={}, Kind={}, Owner={}, Position={}, HasDurability={}, Durability={}".format(self.trap_id, self.kind, self.owner, self.position, self.has_durability, self.durability)
 
     def to_dict(self):
         return {
@@ -36,7 +40,7 @@ class Trap(object):
 
     def equals(self, trap):
         #TODO if (upgrades):
-        return trap.durability != self.durability
+        return trap.durability == self.durability
 
 
 class PitfallTrap(Trap):
@@ -44,6 +48,9 @@ class PitfallTrap(Trap):
         super().__init__(trap_id, TRAP_PITFALL, owner, position, -1, False)
         self.capacity = capacity
         self.mobs_in_trap = 0
+
+    def __repr__(self):
+        return "<PitfallTrap: Id={}, Owner={}, Position={}, MobsInTrap={}, Capacity={}".format(self.trap_id, self.owner, self.position, self.mobs_in_trap, self.capacity)
 
     def to_dict(self):
         d = super().to_dict()
@@ -55,7 +62,7 @@ class PitfallTrap(Trap):
         return PitfallTrap(self.trap_id, self.owner, self.position, self.capacity)
 
     def equals(self, trap):
-        return super().equals(trap) and (self.mobs_in_trap != trap.mobs_in_trap)
+        return super().equals(trap) and (self.mobs_in_trap == trap.mobs_in_trap)
 
     def handle_unit(self, unit, player):
         if self.mobs_in_trap <= self.capacity:
@@ -66,6 +73,9 @@ class PitfallTrap(Trap):
 class SpikeTrap(Trap):
     def __init__(self, trap_id, owner, position):
         super().__init__(trap_id, TRAP_SPIKE, owner, position, 25)
+
+    def __repr__(self):
+        return "<SpikeTrap: Id={}, Owner={}, Position={}, Durability={}".format(self.trap_id, self.owner, self.position, self.durability)
 
     def copy(self):
         return SpikeTrap(self.trap_id, self.owner, self.position)
@@ -80,9 +90,13 @@ class CatapultTrap(Trap):
         super().__init__(trap_id, TRAP_CATAPULT, owner, position, 50)
         self.range = 4
 
+    def __repr__(self):
+        return "<CatapultTrap: Id={}, Owner={}, Position={}, Durability={}, Range={}".format(self.trap_id, self.owner, self.position, self.durability, self.range)
+
     def to_dict(self):
         d = super().to_dict()
         d["range"] = self.range
+        return d
 
     def copy(self):
         return CatapultTrap(self.trap_id, self.owner, self.position)
@@ -104,6 +118,9 @@ class LootTrap(Trap):
     def __init__(self, trap_id, owner, position):
         super().__init__(trap_id, TRAP_LOOT, owner, position, 15)
 
+    def __repr__(self):
+        return "<LootTrap: Id={}, Owner={}, Position={}, Durability={}".format(self.trap_id, self.owner, self.position, self.durability)
+
     def copy(self):
         return LootTrap(self.trap_id, self.owner, self.position)
 
@@ -113,4 +130,4 @@ class LootTrap(Trap):
         player.money += 0.1*unit.bounty
 
 
-lookup = {0: PitfallTrap, 1: SpikeTrap, 2: CatapultTrap, 3: LootTrap}
+lookup = {TRAP_PITFALL: PitfallTrap, TRAP_SPIKE: SpikeTrap, TRAP_CATAPULT: CatapultTrap, TRAP_LOOT: LootTrap}
