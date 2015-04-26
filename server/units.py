@@ -2,9 +2,9 @@ UNIT_SOLIDER = 0
 
 
 class Unit(object):
-    def __init__(self, unit_id, unit_type, owner, position, upgrades, hp, bounty, trap_wear, direction, speed):
+    def __init__(self, unit_id, unit_kind, owner, position, upgrades, hp, bounty, trap_wear, direction, speed):
         self.unit_id = unit_id
-        self.unit_type = unit_type
+        self.unit_kind = unit_kind
         self.owner = owner
         self.position = position
         self.upgrades = upgrades
@@ -18,7 +18,7 @@ class Unit(object):
     def to_dict(self):
         return {
             "id": self.unit_id,
-            "type": self.unit_type
+            "kind": self.unit_kind
             "owner": self.owner,
             "position": [self.position[0], self.position[1]],
             "upgrades": self.upgrades,
@@ -28,7 +28,7 @@ class Unit(object):
         }
 
     def copy(self):
-        return Unit(self.unit_id, self.unit_type, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear, self.direction, self.speed, self.speed_counter)
+        return Unit(self.unit_id, self.unit_kind, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear, self.direction, self.speed, self.speed_counter)
 
     def get_next_position(self):
         return None
