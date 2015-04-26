@@ -37,7 +37,7 @@ class Building(object):
 class Headquaters(Building):
     def __init__(self, building_id, owner, position):
         super().__init__(building_id, BUILDING_HQ, (1, 4), owner, position)
-        self.income_per_tick=10
+        self.income_per_tick = 10
 
     def __repr__(self):
         return "<Headquaters: Id={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.size, self.owner, self.position, self.upgrades)
