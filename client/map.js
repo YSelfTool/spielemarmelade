@@ -7,24 +7,29 @@ function Map(size, units, traps, buildings) {
     this.range = 2;
 }
 
-Map.prototype.draw = function(ctx, tileSize, imgloader) {
+Map.prototype.draw = function(ctx, tileSize, imgloader, pl) {
     var visible = new Uint8Array(this.size.x * this.size.y);
+    ctx.globalAlpha = 1;
     for (var i = 0; i < this.buildings.length; i++) {
         var b = this.buildings[i];
-        for (var x = b.position.x - this.range; x <= b.position.x + this.range; x++) {
-            for (var y = b.position.y - this.range; y <= b.position.y + this.range; y++) {
-                if (x >= 0 && x < this.size.x && y >= 0 && y < this.size.y) {
-                    visible[x + this.size.x * y] = 1;
+        if (b.player == pl.id) {
+            for (var x = b.position.x - this.range; x <= b.position.x + b.size.x - 1 + this.range; x++) {
+                for (var y = b.position.y - this.range; y <= b.position.y + b.size.y - 1 + this.range; y++) {
+                    if (x >= 0 && x < this.size.x && y >= 0 && y < this.size.y) {
+                        visible[x + this.size.x * y] = 1;
+                    }
                 }
             }
         }
     }
     for (var i = 0; i < this.traps.length; i++) {
         var t = this.traps[i];
-        for (var x = t.pos.x - this.range; x <= t.pos.x + this.range; x++) {
-            for (var y = t.pos.y - this.range; y <= t.pos.y + this.range; y++) {
-                if (x >= 0 && x < this.size.x && y >= 0 && y < this.size.y) {
-                    visible[x + this.size.x * y] = 1;
+        if (t.player == pl.id) {
+            for (var x = t.pos.x - this.range; x <= t.pos.x + this.range; x++) {
+                for (var y = t.pos.y - this.range; y <= t.pos.y + this.range; y++) {
+                    if (x >= 0 && x < this.size.x && y >= 0 && y < this.size.y) {
+                        visible[x + this.size.x * y] = 1;
+                    }
                 }
             }
         }
@@ -66,6 +71,7 @@ Map.prototype.draw = function(ctx, tileSize, imgloader) {
     }
     for (var x = 0; x < this.size.x; x++) {
         for (var y = 0; y < this.size.y; y++) { 
+            ctx.globalAlpha = 1.0;
             var typecount = 0;
             var unitcount = 0;
             var existentkinds = [];
@@ -95,6 +101,11 @@ Map.prototype.draw = function(ctx, tileSize, imgloader) {
                         typeindex += 1;
                     }
                 }
+            }
+            if (visible[x + this.size.x * y] == 0) {
+                ctx.globalAlpha = 0.5;
+                ctx.fillStyle = "#808080";
+                ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
             }
         }
     }
