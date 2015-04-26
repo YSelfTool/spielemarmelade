@@ -1,5 +1,6 @@
 import json
 import asyncio
+import copy
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -245,9 +246,9 @@ class GameState(object):
         money2 = self.game.player2.money
         hp2 = self.game.player2.health_points
         return {
-            "units": [unit.copy() for unit in self.units],
-            "traps": [trap.copy() for trap in self.traps],
-            "buildings": [building.copy() for building in self.buildings],
+            "units": [copy.copy(unit) for unit in self.units],
+            "traps": [copy.copy(trap) for trap in self.traps],
+            "buildings": [copy.copy(building) for building in self.buildings],
             "players": {"player1": (hp1, money1), "player2": (hp2, money2)}
         }
 
@@ -305,3 +306,4 @@ class GameState(object):
                     elif isinstance(trap, traps.PitfallTrap) and (trap.mobs_in_trap == trap.capacity):
                         self.traps.remove(trap)
                         self.map[x][y] = None
+
