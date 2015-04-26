@@ -7,8 +7,8 @@ logger.setLevel(logging.INFO)
 import buildings
 import traps
 
-MAP_SIZE_X = 64
-MAP_SIZE_Y = 32
+MAP_SIZE_X = 32
+MAP_SIZE_Y = 16
 
 
 class Game(object):
@@ -34,17 +34,25 @@ class GameState(object):
 
     def get_building_bounds(self, building):
         building_x_start = building.position[0]
-        building_x_stop = building_x_start+building.size[0]
         building_y_start = building.position[1]
-        building_y_stop = building_y_start+building.size[1]
+        if isinstance(building, traps.Trap):
+            building_x_stop = building_x_start + 1
+            building_y_stop = building_y_start + 1
+        else:
+            building_x_stop = building_x_start + building.size[0]
+            building_y_stop = building_y_start + building.size[1]
 
         return building_x_start, building_x_stop, building_y_start, building_y_stop
 
     def get_building_bounds_at_position(self, building, position):
         building_x_start = position[0]
-        building_x_stop = building_x_start+building.size[0]
         building_y_start = position[1]
-        building_y_stop = building_y_start+building.size[1]
+        if isinstance(building, traps.Trap):
+            building_x_stop = building_x_start + 1
+            building_y_stop = building_y_start + 1
+        else:
+            building_x_stop = building_x_start + building.size[0]
+            building_y_stop = building_y_start + building.size[1]
 
         return building_x_start, building_x_stop, building_y_start, building_y_stop
 
@@ -132,7 +140,7 @@ class GameState(object):
     def send_state_delta(self, old_state):
         changed_units = []
         changed_traps = []
-        changed_buildings = []
+        # changed_buildings = []
         players = []
 
         old_units = old_state["units"]
@@ -142,9 +150,9 @@ class GameState(object):
         for unit in self.units:
             unit_id = unit.unit_id
             old_unit = [unit for unit in old_units if unit.unit_id == unit_id]
-            if (len(old_unit) == 1):
+            if len(old_unit) == 1:
                 old_unit = old_unit[0]
-                if (not unit.equals(old_unit)):
+                if not unit.equals(old_unit):
                     changed_units.append(unit)
 
         old_traps = old_state["traps"]
@@ -154,22 +162,20 @@ class GameState(object):
         for trap in self.traps:
             trap_id = trap.trap_id
             old_trap = [trap for trap in old_traps if trap.trap_id == trap_id]
-            if (len(old_trap) == 1):
+            if len(old_trap) == 1:
                 old_trap = old_trap[0]
-                if (not trap.equals(old_trap)):
+                if not trap.equals(old_trap):
                     changed_traps.append(trap)                    
 
         old_buildings = old_state["buildings"]
         new_buildings = [building for building in self.buildings if building not in old_buildings]
 
         (hp, money) = old_state["players"]["player1"]
-        if (hp != self.game.player1.health_points 
-            or money != self.game.player1.money)
+        if (hp != self.game.player1.health_points) or (money != self.game.player1.money):
             players.append(self.game.player1)
 
         (hp, money) = old_state["players"]["player2"]
-        if (hp != self.game.player2.health_points 
-            or money != self.game.player2.money)
+        if (hp != self.game.player2.health_points) or (money != self.game.player2.money):
             players.append(self.game.player2)
 
         return {
@@ -236,7 +242,7 @@ class GameState(object):
         for unit in self.units:
             if unit.may_move():
                 (x, y) = unit.get_next_position()
-                (ox, oy) = unit.position
+                # (ox, oy) = unit.position
                 if (1 <= x < MAP_SIZE_X-1) and (0 <= y < MAP_SIZE_Y):
                     unit.set_new_position([x, y])
                 if y == -1:
