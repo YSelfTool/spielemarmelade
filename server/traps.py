@@ -9,8 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class Trap(object):
-    def __init__(self, trap_id, owner, position, durability, has_durability=True):
+    def __init__(self, trap_id, trap_type, owner, position, durability, has_durability=True):
         self.trap_id = trap_id
+        self.trap_type = trap_type
         self.owner = owner
         self.position = position
         self.upgrades = []
@@ -20,6 +21,7 @@ class Trap(object):
     def to_dict(self):
         return {
             "id": self.trap_id,
+            "type": self.trap_type,
             "owner": self.owner,
             "position": [self.position[0], self.position[1]],
             "upgrades": self.upgrades,
@@ -27,7 +29,7 @@ class Trap(object):
         }
 
     def copy(self):
-        return Trap(self.trap_id, self.owner, self.position, self.durability, self.has_durability)
+        return Trap(self.trap_id, self.trap_type, self.owner, self.position, self.durability, self.has_durability)
 
     def handle_unit(self, unit, player):
         pass
@@ -38,9 +40,10 @@ class Trap(object):
             return False
         return True
 
+
 class PitfallTrap(Trap):
-    def __init__(self, trap_id, owner, position, capacity):
-        super().__init__(TRAP_PITFALL, trap_id, owner, position, -1, False)
+    def __init__(self, trap_id, owner, position, capacity=10):
+        super().__init__(trap_id, TRAP_PITFALL, owner, position, -1, False)
         self.capacity = capacity
         self.mobs_in_trap = 0
 
@@ -51,7 +54,7 @@ class PitfallTrap(Trap):
         return d
 
     def copy(self):
-        return PitfallTrap(self.trap_id, self.owner, self.position, self.capacity, -1, False)
+        return PitfallTrap(self.trap_id, self.owner, self.position, self.capacity)
 
     def equals(self, trap):
         return super.equals(trap) and (self.mobs_in_trap != trap.mobs_in_trap)
@@ -64,7 +67,7 @@ class PitfallTrap(Trap):
 
 class SpikeTrap(Trap):
     def __init__(self, trap_id, owner, position):
-        super().__init__(TRAP_SPIKE, trap_id, owner, position, 25)
+        super().__init__(trap_id, TRAP_SPIKE, owner, position, 25)
 
     def copy(self):
         return SpikeTrap(self.trap_id, self.owner, self.position)
@@ -76,7 +79,7 @@ class SpikeTrap(Trap):
 
 class CatapultTrap(Trap):
     def __init__(self, trap_id, owner, position):
-        super().__init__(TRAP_CATAPULT, trap_id, owner, position, 50)
+        super().__init__(trap_id, TRAP_CATAPULT, owner, position, 50)
         self.range = 4
 
     def to_dict(self):
@@ -101,7 +104,7 @@ class CatapultTrap(Trap):
 
 class LootTrap(Trap):
     def __init__(self, trap_id, owner, position):
-        super().__init__(TRAP_LOOT, trap_id, owner, position, 15)
+        super().__init__(trap_id, TRAP_LOOT, owner, position, 15)
 
     def copy(self):
         return LootTrap(self.trap_id, self.owner, self.position)
