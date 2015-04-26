@@ -18,7 +18,7 @@ class Unit(object):
     def to_dict(self):
         return {
             "id": self.unit_id,
-            "kind": self.unit_kind
+            "kind": self.unit_kind,
             "owner": self.owner,
             "position": [self.position[0], self.position[1]],
             "upgrades": self.upgrades,
@@ -45,6 +45,8 @@ class Unit(object):
         self.position = position
 
     def equals(self, unit):
+        if unit.unit_kind != self.unit_kind:
+            return False
         if unit.position != self.position:
             return False
         #TODO if (upgrades):
@@ -58,4 +60,5 @@ class UnitSolider(Unit):
         super().__init__(unit_id, UNIT_SOLIDER, owner, position, upgrades, 10, 20, direction, speed)
 
     def get_next_position(self):
-        return (x + direction, y)
+        (x, y) = self.position
+        return x + self.direction, y
