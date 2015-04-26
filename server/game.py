@@ -104,7 +104,7 @@ class GameState(object):
         if self.can_place_building_at(trap, (x, y)):
             logger.debug("Spawning trap of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(trap)
-            self.buildings.append(trap)
+            self.traps.append(trap)
 
     # update game state
     def tick(self):
