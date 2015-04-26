@@ -28,7 +28,7 @@ class Building(object):
         return "<Building: Id={}, Kind={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.building_kind, self.size, self.owner, self.position, self.upgrades)
 
     def equals(self, building):
-        return (self.id == building.id) and (self.building_kind == building.building_kind) and (self.position == building.position)
+        return (self.building_id == building.building_id) and (self.building_kind == building.building_kind) and (self.position == building.position)
 
     def tick(self, player):
         pass
