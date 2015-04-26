@@ -139,6 +139,7 @@ class UnitTopStepSoldier(Unit):
         else:
             self.step_counter = 0
             new_position = (x, y + 1)
+        return new_position
 
 class UnitBottomStepSoldier(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
@@ -160,3 +161,4 @@ class UnitBottomStepSoldier(Unit):
         else:
             self.step_counter = 0
             new_position = (x, y - 1)
+        return new_position
