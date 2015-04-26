@@ -122,7 +122,8 @@ class UnitCrookedSoldier(Unit):
 class UnitTopStepSoldier(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         self.step_counter = 0
-        
+        self.step_number = 5
+
         speed = 5
         trap_wear = 2
         hp = 10
@@ -133,7 +134,7 @@ class UnitTopStepSoldier(Unit):
         (x, y) = self.position
         new_position = ()
         self.step_counter += 1
-        if self.step_counter < 5:
+        if self.step_counter < step_number:
             new_position = (x + self.direction, y)
         else:
             self.step_counter = 0
@@ -142,7 +143,8 @@ class UnitTopStepSoldier(Unit):
 class UnitBottomStepSoldier(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         self.step_counter = 0
-        
+        self.step_number = 5
+
         speed = 5
         trap_wear = 2
         hp = 10
@@ -153,7 +155,7 @@ class UnitBottomStepSoldier(Unit):
         (x, y) = self.position
         new_position = ()
         self.step_counter += 1
-        if self.step_counter < 5:
+        if self.step_counter < step_number:
             new_position = (x + self.direction, y)
         else:
             self.step_counter = 0
