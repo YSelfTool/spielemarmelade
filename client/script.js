@@ -228,6 +228,7 @@ function triggerSpawner(spawner) {
 }
 
 function canvasClickHandler(canvasPos) {
+    console.log(canvasPos);
     if (state == "running") {
         var mapPos = canvasPos.div(tileSize).floor();
         if (currentlyBuilding == "building") {
