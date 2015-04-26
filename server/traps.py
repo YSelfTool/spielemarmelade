@@ -50,7 +50,7 @@ class PitfallTrap(Trap):
         self.mobs_in_trap = 0
 
     def __repr__(self):
-        return "<PitfallTrap: Id={}, Owner={}, Position={}, MobsInTrap={}, Capacity={}".format(self.trap_id, self.owner, self.position, self.mobs_in_trap, self.capacity)
+        return "<PitfallTrap: Id={}, Owner={}, Position={}, MobsInTrap={}, Capacity={}>".format(self.trap_id, self.owner, self.position, self.mobs_in_trap, self.capacity)
 
     def to_dict(self):
         d = super().to_dict()
@@ -75,7 +75,7 @@ class SpikeTrap(Trap):
         super().__init__(trap_id, TRAP_SPIKE, owner, position, 25)
 
     def __repr__(self):
-        return "<SpikeTrap: Id={}, Owner={}, Position={}, Durability={}".format(self.trap_id, self.owner, self.position, self.durability)
+        return "<SpikeTrap: Id={}, Owner={}, Position={}, Durability={}>".format(self.trap_id, self.owner, self.position, self.durability)
 
     def copy(self):
         return SpikeTrap(self.trap_id, self.owner, self.position)
@@ -87,11 +87,11 @@ class SpikeTrap(Trap):
 
 class CatapultTrap(Trap):
     def __init__(self, trap_id, owner, position):
-        super().__init__(trap_id, TRAP_CATAPULT, owner, position, 50)
+        super().__init__(trap_id, TRAP_CATAPULT, owner, position, 10)
         self.range = 4
 
     def __repr__(self):
-        return "<CatapultTrap: Id={}, Owner={}, Position={}, Durability={}, Range={}".format(self.trap_id, self.owner, self.position, self.durability, self.range)
+        return "<CatapultTrap: Id={}, Owner={}, Position={}, Durability={}, Range={}>".format(self.trap_id, self.owner, self.position, self.durability, self.range)
 
     def to_dict(self):
         d = super().to_dict()
@@ -119,7 +119,7 @@ class LootTrap(Trap):
         super().__init__(trap_id, TRAP_LOOT, owner, position, 15)
 
     def __repr__(self):
-        return "<LootTrap: Id={}, Owner={}, Position={}, Durability={}".format(self.trap_id, self.owner, self.position, self.durability)
+        return "<LootTrap: Id={}, Owner={}, Position={}, Durability={}>".format(self.trap_id, self.owner, self.position, self.durability)
 
     def copy(self):
         return LootTrap(self.trap_id, self.owner, self.position)
