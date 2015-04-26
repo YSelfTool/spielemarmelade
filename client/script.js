@@ -5,7 +5,7 @@ var state = "";
 var canvas, ctx;
 var map;
 var player, enemy;
-var tileSize = 16;
+var tileSize = 32;
 var currentlyBuilding = false;
 var currentBuildingKind = 0;
 var currentBuildingSpawnerKind = 0;
@@ -97,36 +97,73 @@ function gameQueuedHandler(data) {
 
 function fullGameStateHandler(data) {
     if (state == "running") {
-        var units = [];
+        map = new Map(data.size, [], [], []);
         for (var i = 0; i < data.units.length; i++) {
-            var u = data.units[i];
-            units.push(new Unit(u.owner, new Position(u.position[0], u.position[1]), u.id, u.upgrades, u.hp, u.bounty, u.wear));
+            map.addUnit(data.units[1]);
         }
-        var traps = [];
         for (var i = 0; i < data.traps.length; i++) {
-            var t = data.traps[i];
-            traps.push(new Trap(TrapImage(imgloader, t.id), t.owner, new Position(t.position[0], t.position[1]), t.id, t.upgrades, t.durability));
+            map.addTrap(data.traps[i]);
         }
-        var buildings = [];
         for (var i = 0; i < data.buildings.length; i++) {
-            var b = data.buildings[i];
-            buildings.push(new Building(BuildingImage(imgloader, b.id), b.owner, new Position(b.position[0], b.position[1]), b.size, b.upgrades));
+            map.addBuilding(data.buildings[i]);
         }
-        map = new Map(data.size, units, traps, buildings);
+        tileSize = canvas.width / map.size.x;
         console.log("Houston, we have a map!");
+    }
+}
+
+function changedGameStateHandler(data) {
+    cache.clear();
+    console.log(data);
+    if (state == "running") {
+        for (var i = 0; i < data.new_units.length; i++) {
+            map.addUnit(data.new_units[i]);
+        }
+        for (var i = 0; i < data.new_buildings.length; i++) {
+            map.addBuilding(data.new_buildings[i]);
+        }
+        for (var i = 0; i < data.new_traps.length; i++) {
+            map.addTrap(data.new_traps[i]);
+        }
+        var unitIdsToDelete = []
+        for (var i = 0; i < data.deleted_units; i++) {
+            unitIdsToDelete.push(data.deleted_units[i].id);
+        }
+        for (var i = 0; i < data.changed_units; i++) {
+            unitIdsToDelete.push(data.changed_units[i].id);
+        }
+        map.removeUnits(unitIdsToDelete);
+        var trapIdsToDelete = [];
+        for (var i = 0; i < data.deleted_traps; i++) {
+            trapIdsToDelete.push(data.deleted_traps[i].id);
+        }
+        for (var i = 0; i < data.changed_traps; i++) {
+            trapIdsToDelete.push(data.changed_traps[i].id);
+        }
+        map.removeTraps(trapIdsToDelete);
+        for (var i = 0; i < data.changed_units; i++) {
+            map.addUnit(data.changed_units[i]);
+        }
+        for (var i = 0; i < data.changed_traps; i++) {
+            map.addTrap(data.changed_traps[i]);
+        }
     }
 }
 
 function placeSpawner(pos) {
     var kind = currentBuildingSpawnerKind;
     network.placeSpawner(pos, kind);
-    cache.buildingCache.push(new Building(BuildingImage(imgloader, BUILDING_SPAWNER), player.id, pos, new Position(1, 1), BUILDING_SPAWNER, kind));
+    cache.addBuilding(imgloader, BUILDING_SPAWNER, kind, pos, new Position(1, 1), player.id);
 }
 
 function placeTrap(pos) {
     var kind = currentTrapType;
     network.placeTrap(pos, kind);
-    cache.trapCache.push(new Trap(TrapImage(imgloader, kind), player.id, pos, kind, [], 0));
+    cache.addTrap(imgloader, kind, pos, player.id);
+}
+
+function triggerSpawner(spawner) {
+    network.triggerSpawner(spawner.id);
 }
 
 function canvasClickHandler(canvasPos) {
@@ -137,8 +174,14 @@ function canvasClickHandler(canvasPos) {
             placeSpawner(mapPos);
         }
     } else if (currentlyBuilding == "trap") {
-        if (mapPos.x >= 2 && mapPos.x <= 61)
+        if (mapPos.x >= 2 && mapPos.x < map.size.x - 2)
             placeTrap(mapPos);
+    } else {
+        if (mapPos.x == player.spawnerLane()) {
+            var b = map.buildingByPos(mapPos);
+            if (b != null)
+                triggerSpawner(b);
+        }
     }
 }
 
@@ -155,7 +198,8 @@ window.onload=function() {
             "set_player_id": setPlayerIdHandler,
             "game_queued": gameQueuedHandler,
             "game_started": gameStartHandler,
-            "full_game_state": fullGameStateHandler 
+            "full_game_state": fullGameStateHandler,
+            "changed_game_state": changedGameStateHandler 
         };
     // ws://134.61.40.201:8765/game
     network = new Network("ws://134.61.40.201:8765/game", executors);
@@ -171,6 +215,9 @@ window.onload=function() {
         canvasClickHandler(pos);
     };
     ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
     map = undefined;
     document.getElementById("known-building-spawner-soldier").onclick = function(e) {
         spawnerBuildingClick(UNIT_SOLDIER);

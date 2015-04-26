@@ -9,17 +9,17 @@ function Map(size, units, traps, buildings) {
 Map.prototype.draw = function(ctx, tileSize, imgloader) {
     for (var x = 2; x < this.size.x - 2; x++) {
         for (var y = 0; y < this.size.y; y++) {
-            ctx.drawImage(imgloader.get("tile-grass"), x * tileSize, y * tileSize);
+            ctx.drawImage(imgloader.get("tile-grass"), x * tileSize, y * tileSize, tileSize, tileSize);
         }
     }
     for (var x = 0; x < 2; x++) {
         for (var y = 0; y < this.size.y; y++) {
-            ctx.drawImage(imgloader.get("tile-ground"), x * tileSize, y * tileSize);
+            ctx.drawImage(imgloader.get("tile-ground"), x * tileSize, y * tileSize, tileSize, tileSize);
         }
     }
     for (var x = this.size.x - 2; x < this.size.x; x++) {
         for (var y = 0; y < this.size.y; y++) {
-            ctx.drawImage(imgloader.get("tile-ground"), x * tileSize, y * tileSize);
+            ctx.drawImage(imgloader.get("tile-ground"), x * tileSize, y * tileSize, tileSize, tileSize);
         }
     }
     for (var i = 0; i < this.buildings.length; i++) {
@@ -28,7 +28,7 @@ Map.prototype.draw = function(ctx, tileSize, imgloader) {
     }
     for (var i = 0; i < this.traps.length; i++) {
         var trap = this.traps[i];
-        trap.drawImage(ctx, tileSize, imgloader);
+        trap.draw(ctx, tileSize, imgloader);
     }
     var hists = new Array(UNIT_TYPE_COUNT);
     for (var i = 0; i < UNIT_TYPE_COUNT; i++) {
@@ -77,3 +77,42 @@ Map.prototype.draw = function(ctx, tileSize, imgloader) {
         }
     }
 };
+Map.prototype.addUnit = function(u) {
+    this.units.push(new Unit(u.id, u.owner, new Position(u.position[0], u.position[1]), u.kind, u.upgrades, u.hp, u.bounty, u.wear));
+};
+Map.prototype.addBuilding = function(b) {
+    this.buildings.push(new Building(b.id, BuildingImage(imgloader, b.kind), b.owner, new Position(b.position[0], b.position[1]), new Position(b.size[0], b.size[1]), b.kind, b.mob_kind));
+};
+Map.prototype.addTrap = function(t) {
+    this.traps.push(new Trap(t.id, TrapImage(imgloader, t.kind), t.owner, new Position(t.position[0], t.position[1]), t.kind, t.upgrades, t.durability)); 
+}
+Map.prototype.removeUnits = function(ids) {
+    for (var j = 0; j < this.units.length; j++) {
+        if (this.units[j].id in ids) {
+            this.units.slice(j--, 1);
+        }
+    }
+}
+Map.prototype.removeTraps = function(ids) {
+    for (var j = 0; j < this.traps.length; j++) {
+        console.log([this.traps[j].id, ids]);
+        if (this.traps[j].id in ids) {
+            this.traps.slice(j--, 1);
+        }
+    }
+}
+Map.prototype.removeBuildings = function(ids) {
+    for (var j = 0; j < this.buildings.length; j++) {
+        if (this.buildings[j].id in ids) {
+            this.buildings.slice(j--, 1);
+        }
+    }
+}
+Map.prototype.buildingByPos = function(pos) {
+    for (var i = 0; i < this.buildings.length; i++) {
+        if (this.buildings[i].position.equals(pos)) {
+            return this.buildings[i];
+        }
+    }
+    return null;
+}

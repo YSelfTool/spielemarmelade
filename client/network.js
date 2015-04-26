@@ -41,8 +41,12 @@ Network.prototype.send = function(data) {
 };
 Network.prototype.parse = function(message) {
     data = JSON.parse(message);
-    console.log(data); 
-    this.executors[data.action](data);
+    if (data.action in this.executors) {
+        this.executors[data.action](data);
+    } else {
+        console.log("Unkown Package Incoming");
+        console.log(data); 
+    }
 };
 
 Network.prototype.handleSetToken = function(data) {
@@ -77,5 +81,10 @@ Network.prototype.placeSpawner = function(pos, kind) {
 Network.prototype.placeTrap = function(pos, kind) {
     msg = { "position": pos.toJSON(), "kind": kind };
     this.fillMsg("place_trap", msg);
+    this.send(msg);
+}
+Network.prototype.triggerSpawner = function(id) {
+    msg = { "spawner_id": id };
+    this.fillMsg("trigger_spawner", msg);
     this.send(msg);
 }
