@@ -10,6 +10,7 @@ import units
 
 MAP_SIZE_X = 32
 MAP_SIZE_Y = 16
+GAME_SPEED = 1 / 4
 
 
 class Game(object):
@@ -257,8 +258,6 @@ class GameState(object):
         (hp, money) = old_state["players"]["player2"]
         if (hp != self.game.player2.health_points) or (money != self.game.player2.money):
             players.append(self.game.player2)
-
-        logger.info("Changed units: %s", json.dumps([u.to_dict() for u in changed_units]))
 
         return {
             "action": "changed_game_state",
