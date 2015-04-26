@@ -24,11 +24,11 @@ Map.prototype.draw = function(ctx, tileSize, imgloader) {
     }
     for (var i = 0; i < this.buildings.length; i++) {
         var building = this.buildings[i];
-        ctx.drawImage(building.img, building.position.x * tileSize, building.position.y * tileSize);
+        building.draw(ctx, tileSize, imgloader);
     }
     for (var i = 0; i < this.traps.length; i++) {
         var trap = this.traps[i];
-        ctx.drawImage(trap.img, trap.position.x * tileSize, trap.position.y * tileSize);
+        trap.drawImage(ctx, tileSize, imgloader);
     }
     var hists = new Array(UNIT_TYPE_COUNT);
     for (var i = 0; i < UNIT_TYPE_COUNT; i++) {

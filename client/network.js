@@ -69,3 +69,13 @@ Network.prototype.joinGame = function(name) {
     this.fillMsg("join_game", msg);
     this.send(msg);
 };
+Network.prototype.placeSpawner = function(pos, kind) {
+    msg = { "position": pos.toJSON(), "kind": kind };
+    this.fillMsg("place_spawner", msg);
+    this.send(msg);
+}
+Network.prototype.placeTrap = function(pos, kind) {
+    msg = { "position": pos.toJSON(), "kind": kind };
+    this.fillMsg("place_trap", msg);
+    this.send(msg);
+}

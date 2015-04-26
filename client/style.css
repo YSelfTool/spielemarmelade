@@ -54,12 +54,13 @@ body {
     vertical-align: top;
 }
 
-.known-buildings-div div {
+.known-stuff-div div {
     display: inline-block;
 }
 
 .infospace {
     /*border: 1px solid black;*/
+    max-width: 200px;
 }
 
 .footer-message {
