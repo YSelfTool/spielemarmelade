@@ -1,4 +1,5 @@
 import json
+import random
 import asyncio
 import copy
 import logging
@@ -176,17 +177,17 @@ class GameState(object):
 
         winners = []
         if self.game.player1.health_points == 0:
-            winners.append(player2)
-            self.game.winner = player2
-            self.game.loser = player1
+            winners.append(self.game.player2)
+            self.game.winner = self.game.player2
+            self.game.loser = self.game.player1
         if self.game.player2.health_points == 0:
-            winners.append(player1)
-            self.game.winner = player1
-            self.game.loser = player2
+            winners.append(self.game.player1)
+            self.game.winner = self.game.player1
+            self.game.loser = self.game.player2
         if len(winners) > 0:
             self.game.running = False
             if len(winners) == 2:
-                if random() % 2 = 0:
+                if random.randint(0,1) == 0:
                     self.game.winner = winners[0]
                     self.game.loser = winners[1]
                 else:
