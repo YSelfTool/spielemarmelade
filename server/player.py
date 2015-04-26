@@ -20,3 +20,10 @@ class Player(object):
 
     def add_money(self, money):
         self.money += money
+
+    def to_dict(self):
+        return {
+            "id": self.player_id,
+            "hp": self.health_points,
+            "money": money 
+        }

@@ -4,16 +4,28 @@ var network;
 var state = "";
 var canvas, ctx;
 var map;
-var player;
-var enemy;
+var player, enemy;
 var tileSize = 16;
-
+var currentlyBuilding = false;
+var currentBuildingKind = 0;
+var currentBuildingSpawnerKind = 0;
+var currentTrapType = 0;
+var buildingcache = [];
+var cache;
 
 function draw() {
     if (state == "running")
         requestAnimationFrame(draw);
     if (map) {
         map.draw(ctx, tileSize, imgloader);
+    }
+    for (var i = 0; i < cache.buildingCache.length; i++) {
+        var building = cache.buildingCache[i];
+        building.draw(ctx, tileSize, imgloader);
+    }
+    for (var i = 0; i < cache.trapCache.length; i++) {
+        var trap = cache.trapCache[i];
+        trap.draw(ctx, tileSize, imgloader);
     }
 };
 
@@ -66,8 +78,10 @@ function setPlayerIdHandler(data) {
 
 function gameStartHandler(data) {
     if (state == "lobby" || state == "queued") {
-        enemy = new Player(data["enemy"][0], data["enemy"][1]);
+        console.log(data);
+        enemy = new Player(data["enemy"]["enemy_id"], data["enemy"]["enemy_name"], data["enemy"]["enemy_side"]);
         document.getElementById("lobby-div").style.display = "none";
+        player.side = (enemy.side == "left" ? "right" : "left");
         state = "running";
         showMessage("Mögen die Spiele beginnen.");
         draw();
@@ -82,8 +96,6 @@ function gameQueuedHandler(data) {
 }
 
 function fullGameStateHandler(data) {
-    console.log("handler runnning");
-    console.log(state);
     if (state == "running") {
         var units = [];
         for (var i = 0; i < data.units.length; i++) {
@@ -102,6 +114,31 @@ function fullGameStateHandler(data) {
         }
         map = new Map(data.size, units, traps, buildings);
         console.log("Houston, we have a map!");
+    }
+}
+
+function placeSpawner(pos) {
+    var kind = currentBuildingSpawnerKind;
+    network.placeSpawner(pos, kind);
+    cache.buildingCache.push(new Building(BuildingImage(imgloader, BUILDING_SPAWNER), player.id, pos, new Position(1, 1), BUILDING_SPAWNER, kind));
+}
+
+function placeTrap(pos) {
+    var kind = currentTrapType;
+    network.placeTrap(pos, kind);
+    cache.trapCache.push(new Trap(TrapImage(imgloader, kind), player.id, pos, kind, [], 0));
+}
+
+function canvasClickHandler(canvasPos) {
+    var mapPos = canvasPos.div(tileSize).floor();
+    console.log(mapPos);
+    if (currentlyBuilding == "building") {
+        if (currentBuildingType == BUILDING_SPAWNER && mapPos.x == player.spawnerLane()) {
+            placeSpawner(mapPos);
+        }
+    } else if (currentlyBuilding == "trap") {
+        if (mapPos.x >= 2 && mapPos.x <= 61)
+            placeTrap(mapPos);
     }
 }
 
@@ -126,12 +163,49 @@ window.onload=function() {
     network.connect();
     setButtonAndReturnFunc(login, "login-button", "login-name");
     setButtonAndReturnFunc(joinGame, "lobby-button", "lobby-name");
+    cache = new Cache();
     canvas = document.getElementById("canvas");
+    canvas.onclick = function(e) {
+        var rect = e.target.getBoundingClientRect();
+        var pos = new Position(e.clientX - rect.x, e.clientY - rect.y);
+        canvasClickHandler(pos);
+    };
     ctx = canvas.getContext("2d");
     map = undefined;
+    document.getElementById("known-building-spawner-soldier").onclick = function(e) {
+        spawnerBuildingClick(UNIT_SOLDIER);
+    };
+    document.getElementById("known-building-cancel").onclick = function(e) {
+        currentlyBuilding = null;
+        showCancelInfo();
+    }
+    document.getElementById("known-traps-pitfall").onclick = function(e) {
+        trapBuildingClick(TRAP_PITFALL);
+    }
+    document.getElementById("known-traps-spike").onclick = function(e) {
+        trapBuildingClick(TRAP_SPIKE);
+    }
+    document.getElementById("known-traps-catapult").onclick = function(e) {
+        trapBuildingClick(TRAP_CATAPULT);
+    }
+    document.getElementById("known-traps-looting").onclick = function(e) {
+        trapBuildingClick(TRAP_LOOT);
+    }
 };
 
 window.onclose = quit;
+
+function spawnerBuildingClick(unitKind) {
+    currentBuildingType = BUILDING_SPAWNER;
+    currentBuildingSpawnerType = unitKind;
+    currentlyBuilding = "building";
+    showSpawnerInfo(unitKind);
+}
+
+function trapBuildingClick(trapKind) {
+    currentTrapType = trapKind;
+    currentlyBuilding = "trap";
+}
 
 function setButtonAndReturnFunc(func, buttonname, inputname) {
     document.getElementById(buttonname).onclick = func;
@@ -149,4 +223,9 @@ function showMessage(msg) {
 function showError(msg) {
     document.getElementById("footer").style.color = "darkred";
     document.getElementById("footer").innerHTML = msg;
+}
+
+function showInfo(title, content) {
+    document.getElementById("infospace-title").innerHTML = title;
+    document.getElementById("infospace-content").innerHTML = content;
 }

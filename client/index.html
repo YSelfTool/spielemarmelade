@@ -14,6 +14,8 @@
         <script src="map.js" async></script>
         <script src="player.js" async></script>
         <script src="building.js" async></script>
+        <script src="cache.js" async></script>
+        <script src="info.js" async></script>
     </head>
     <body>
         <div id="main">
@@ -37,22 +39,37 @@
                     <canvas id="canvas" width="1024" height="512"></canvas>
                 </div>
                 <div id="side" class="side">
-                    <div id="known-buildings" class="known-buildings-div">
-                        <div id="known-building-spawner">
+                    <div id="known-buildings" class="known-stuff-div">
+                        <div id="known-building-spawner-soldier">
+                            <img src="gfx/spawner-big.png" />
+                        </div>
+                        <div id="known-building-other1">
                             <img src="http://placehold.it/32x32" />
                         </div>
-                        <div id="known-building-spawner">
+                        <div id="known-building-other2">
                             <img src="http://placehold.it/32x32" />
                         </div>
-                        <div id="known-building-spawner">
+                        <div id="known-building-cancel">
+                            <img src="gfx/cancel-big.png" />
+                        </div>
+                    </div>
+                    <div id="known-traps" class="known-stuff-div">
+                        <div id="known-traps-pitfall">
+                            <img src="gfx/pitfall-big.png" />
+                        </div>
+                        <div id="known-traps-spike">
+                            <img src="gfx/spikes-big.png" />
+                        </div>
+                        <div id="known-traps-catapult">
                             <img src="http://placehold.it/32x32" />
                         </div>
-                        <div id="known-building-spawner">
+                        <div id="known-traps-looting">
                             <img src="http://placehold.it/32x32" />
                         </div>
                     </div>
                     <div id="infospace" class="infospace">
-                        Voll viele Infos
+                        <h3 id="infospace-title"></h3>
+                        <div id="infospace-content"></div>
                     </div>
                 </div>
             </div>

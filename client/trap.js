@@ -7,7 +7,15 @@ function Trap(img, player, pos, kind, upgrades, durability) {
     this.upgrades = upgrades;
     this.durability = durability;
 }
+Trap.prototype.draw = function(ctx, tileSize, imgloader) {
+    ctx.drawImage(this.img, this.pos.x * tileSize, this.pos.y * tileSize);
+};
 
 function TrapImage(imgloader, kind) {
-    return imgloader.get("tile-blue");
+    if (kind == TRAP_SPIKE)
+        return imgloader.get("spikes");
+    if (kind == TRAP_PITFALL)
+        return imgloader.get("pitfall");
+    else 
+        return imgloader.get("tile-blue");
 }

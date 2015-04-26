@@ -97,14 +97,14 @@ class GameState(object):
             self.place_building_in_map(trap)
             self.buildings.append(trap)
 
-    # after each round
+    # update game state
     def tick(self):
         old_state = self.save_game_state()
         the_actions = self.action_buffer.copy()
         self.action_buffer = []
 
         self.move_units()
-        
+
         for (msg, player) in the_actions:
             action = msg["action"]
             if action == "place_spawner":
@@ -130,15 +130,58 @@ class GameState(object):
 
     # changes after each tick
     def send_state_delta(self, old_state):
-        new_units = []
-        deleted_units = []
         changed_units = []
-        new_traps = []
-        deleted_traps = []
         changed_traps = []
-        new_buildings = []
-        deleted_buildings = []
         changed_buildings = []
+        players = []
+
+        old_units = old_state["units"]
+        new_units = [unit for unit in self.units if unit not in old_units]
+        deleted_units = [unit for unit in old_units if unit not in self.units]
+
+        for unit in self.units:
+            unit_id = unit.unit_id
+            old_unit = [unit for unit in old_units if unit.unit_id == unit_id]
+            if (len(old_unit) == 1):
+                old_unit = old_unit[0]
+                if (not unit.equals(old_unit)):
+                    changed_units.append(unit)
+
+        old_traps = old_state["traps"]
+        new_traps = [trap for trap in self.traps if trap not in old_traps]
+        deleted_traps = [trap for trap in old_traps if trap not in self.traps]
+
+        for trap in self.traps:
+            trap_id = trap.trap_id
+            old_trap = [trap for trap in old_traps if trap.trap_id == trap_id]
+            if (len(old_trap) == 1):
+                old_trap = old_trap[0]
+                if (not trap.equals(old_trap)):
+                    changed_traps.append(trap)                    
+
+        old_buildings = old_state["buildings"]
+        new_buildings = [building for building in self.buildings if building not in old_buildings]
+
+        (hp, money) = old_state["players"]["player1"]
+        if (hp != self.game.player1.health_points 
+            or money != self.game.player1.money)
+            players.append(self.game.player1)
+
+        (hp, money) = old_state["players"]["player2"]
+        if (hp != self.game.player2.health_points 
+            or money != self.game.player2.money)
+            players.append(self.game.player2)
+
+        return {
+            "changed_units": [unit.to_dict() for unit in changed_units],
+            "deleted_units": [unit.to_dict() for unit in deleted_units],
+            "new_units": [unit.to_dict() for unit in new_units],
+            "changed_traps": [unit.to_dict() for unit in changed_traps],
+            "deleted_traps": [unit.to_dict() for unit in deleted_traps],
+            "new_traps": [unit.to_dict() for unit in new_traps],
+            "new_buildings": [unit.to_dict() for unit in new_buildings],
+            "changed_players": [player.to_dict() for player in players]
+        }
 
     def handle_message(self, msg, player):
         ok = False
