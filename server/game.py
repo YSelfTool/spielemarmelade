@@ -40,6 +40,32 @@ def get_new_changed_deleted(current, previous, id_lambda):
     return new_things, changed_things, deleted_things
 
 
+def get_building_bounds(building):
+    building_x_start = building.position[0]
+    building_y_start = building.position[1]
+    if isinstance(building, traps.Trap):
+        building_x_stop = building_x_start + 1
+        building_y_stop = building_y_start + 1
+    else:
+        building_x_stop = building_x_start + building.size[0]
+        building_y_stop = building_y_start + building.size[1]
+
+    return building_x_start, building_x_stop, building_y_start, building_y_stop
+
+
+def get_building_bounds_at_position(building, position):
+    building_x_start = position[0]
+    building_y_start = position[1]
+    if isinstance(building, traps.Trap):
+        building_x_stop = building_x_start + 1
+        building_y_stop = building_y_start + 1
+    else:
+        building_x_stop = building_x_start + building.size[0]
+        building_y_stop = building_y_start + building.size[1]
+
+    return building_x_start, building_x_stop, building_y_start, building_y_stop
+
+
 class GameState(object):
     def __init__(self, the_game):
         self.game = the_game
@@ -53,39 +79,15 @@ class GameState(object):
         self.action_buffer = []
         self.spawn_headquaters()
 
-    def get_building_bounds(self, building):
-        building_x_start = building.position[0]
-        building_y_start = building.position[1]
-        if isinstance(building, traps.Trap):
-            building_x_stop = building_x_start + 1
-            building_y_stop = building_y_start + 1
-        else:
-            building_x_stop = building_x_start + building.size[0]
-            building_y_stop = building_y_start + building.size[1]
-
-        return building_x_start, building_x_stop, building_y_start, building_y_stop
-
-    def get_building_bounds_at_position(self, building, position):
-        building_x_start = position[0]
-        building_y_start = position[1]
-        if isinstance(building, traps.Trap):
-            building_x_stop = building_x_start + 1
-            building_y_stop = building_y_start + 1
-        else:
-            building_x_stop = building_x_start + building.size[0]
-            building_y_stop = building_y_start + building.size[1]
-
-        return building_x_start, building_x_stop, building_y_start, building_y_stop
-
     def place_building_in_map(self, building):
-        (x1, x2, y1, y2) = self.get_building_bounds(building)
+        (x1, x2, y1, y2) = get_building_bounds(building)
 
         for x in range(x1, x2):
             for y in range(y1, y2):
                 self.map[x][y] = building
 
     def can_place_building_at(self, building, position):
-        (x1, x2, y1, y2) = self.get_building_bounds_at_position(building, position)
+        (x1, x2, y1, y2) = get_building_bounds_at_position(building, position)
         if (x1 < 0) or (x2 > MAP_SIZE_X) or (y1 < 0) or (y1 > MAP_SIZE_Y):  # don't place out of bounds
             return False
 
@@ -100,10 +102,10 @@ class GameState(object):
         return can_place
 
     def spawn_headquaters(self):
-        hq_player1 = buildings.Headquaters(self.get_next_building_id(), self.game.player1.player_id, (0, int(MAP_SIZE_Y/2-2)))
+        hq_player1 = buildings.Headquaters(self.get_next_building_id(), self.game.player1.player_id, (0, int(MAP_SIZE_Y / 2 - 2)))
         self.buildings.append(hq_player1)
         logger.debug("Spawning headquaters for player %s in map at %s", self.game.player1.name, hq_player1.position)
-        hq_player2 = buildings.Headquaters(self.get_next_building_id(), self.game.player2.player_id, (MAP_SIZE_X-1, int(MAP_SIZE_Y/2-2)))
+        hq_player2 = buildings.Headquaters(self.get_next_building_id(), self.game.player2.player_id, (MAP_SIZE_X-1, int(MAP_SIZE_Y / 2 - 2)))
         self.buildings.append(hq_player2)
         logger.debug("Spawning headquaters for player %s in map at %s", self.game.player2.name, hq_player2.position)
 
