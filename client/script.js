@@ -291,7 +291,7 @@ window.onload=function() {
     canvas = document.getElementById("canvas");
     canvas.onclick = function(e) {
         var rect = e.target.getBoundingClientRect();
-        var pos = new Position(e.clientX - rect.x, e.clientY - rect.y);
+        var pos = new Position(e.clientX - rect.left, e.clientY - rect.top);
         canvasClickHandler(pos);
     };
     ctx = canvas.getContext("2d");
