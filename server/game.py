@@ -23,8 +23,8 @@ class Game(object):
 
 
 def get_new_changed_deleted(current, previous, id_lambda):
-    current_state_ids = map(id_lambda, current)
-    previous_state_ids = map(id_lambda, previous)
+    current_state_ids = list(map(id_lambda, current))
+    previous_state_ids = list(map(id_lambda, previous))
     new_things = list(filter(lambda thing: id_lambda(thing) not in previous_state_ids, current))
     deleted_things = list(filter(lambda thing: id_lambda(thing) not in current_state_ids, previous))
 
