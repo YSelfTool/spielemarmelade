@@ -130,4 +130,9 @@ class LootTrap(Trap):
         player.money += 0.1*unit.bounty
 
 
-lookup = {TRAP_PITFALL: PitfallTrap, TRAP_SPIKE: SpikeTrap, TRAP_CATAPULT: CatapultTrap, TRAP_LOOT: LootTrap}
+lookup = {
+    TRAP_PITFALL: PitfallTrap,
+    TRAP_SPIKE: SpikeTrap,
+    TRAP_CATAPULT: CatapultTrap,
+    TRAP_LOOT: LootTrap
+}

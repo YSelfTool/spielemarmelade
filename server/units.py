@@ -168,4 +168,12 @@ class UnitBottomStepSoldier(Unit):
             self.step_counter = 0
             new_position = (x, y - 1)
 
-lookup = {UNIT_SOLIDER: UnitSolider, UNIT_JUMPER: UnitJumper, UNIT_RUNNER: UnitRunner, UNIT_TANK: UnitTank, UNIT_CROOKEDSOLDIER: UnitCrookedSoldier, UNIT_TOPSTEPSOLDIER: UnitTopStepSoldier, UNIT_BOTTOMSTEPSOLDIER: UnitBottomStepSoldier}
+lookup = {
+    UNIT_SOLIDER: UnitSolider,
+    UNIT_JUMPER: UnitJumper,
+    UNIT_RUNNER: UnitRunner,
+    UNIT_TANK: UnitTank,
+    UNIT_CROOKEDSOLDIER: UnitCrookedSoldier,
+    UNIT_TOPSTEPSOLDIER: UnitTopStepSoldier,
+    UNIT_BOTTOMSTEPSOLDIER: UnitBottomStepSoldier
+}
