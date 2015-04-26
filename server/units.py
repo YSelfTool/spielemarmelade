@@ -2,8 +2,9 @@ UNIT_SOLIDER = 0
 
 
 class Unit(object):
-    def __init__(self, unit_id, owner, position, upgrades, hp, bounty, trap_wear, direction, speed):
+    def __init__(self, unit_id, unit_type, owner, position, upgrades, hp, bounty, trap_wear, direction, speed):
         self.unit_id = unit_id
+        self.unit_type = unit_type
         self.owner = owner
         self.position = position
         self.upgrades = upgrades
@@ -17,6 +18,7 @@ class Unit(object):
     def to_dict(self):
         return {
             "id": self.unit_id,
+            "type": self.unit_type
             "owner": self.owner,
             "position": [self.position[0], self.position[1]],
             "upgrades": self.upgrades,
@@ -51,5 +53,5 @@ class Unit(object):
         return True
 
 class UnitSolider(Unit):
-    def __init__(self, owner, position, upgrades, direction):
-        super().__init__(UNIT_SOLIDER, owner, position, upgrades, 10, 20, direction, 3)
+    def __init__(self, unit_id, owner, position, upgrades, direction):
+        super().__init__(unit_id, UNIT_SOLIDER, owner, position, upgrades, 10, 20, direction, 3)
