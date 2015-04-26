@@ -10,8 +10,8 @@ from game_object import GameObject, cost_lookup
 
 
 class Unit(GameObject):
-    def __init__(self, unit_id, unit_kind, owner, position, upgrades, hp, bounty, trap_wear, direction, speed):
-        super().__init__(unit_id, unit_kind, owner, position, upgrades)
+    def __init__(self, object_id, kind, owner, position, upgrades, hp, bounty, trap_wear, direction, speed):
+        super().__init__(object_id, kind, owner, position, upgrades)
         self.hp = hp
         self.bounty = bounty
         self.trap_wear = trap_wear
@@ -41,7 +41,7 @@ class Unit(GameObject):
         self.position = position
 
     def equals(self, unit):
-        if unit.unit_kind != self.unit_kind:
+        if unit.kind != self.kind:
             return False
         if unit.position != self.position:
             return False
@@ -52,25 +52,25 @@ class Unit(GameObject):
 
 
 class UnitSolider(Unit):
-    def __init__(self, unit_id, owner, position, upgrades, direction):
+    def __init__(self, object_id, owner, position, upgrades, direction):
         speed = 5
         trap_wear = 2
         hp = 20
         bounty = 20
-        super().__init__(unit_id, UNIT_SOLIDER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+        super().__init__(object_id, UNIT_SOLIDER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
         (x, y) = self.position
-        return (x + self.direction, y)
+        return x + self.direction, y
 
 
 class UnitJumper(Unit):
-    def __init__(self, unit_id, owner, position, upgrades, direction):
+    def __init__(self, object_id, owner, position, upgrades, direction):
         speed = 8
         trap_wear = 3
         hp = 20
         bounty = 20
-        super().__init__(unit_id, UNIT_JUMPER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+        super().__init__(object_id, UNIT_JUMPER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
         (x, y) = self.position
@@ -78,12 +78,12 @@ class UnitJumper(Unit):
 
 
 class UnitRunner(Unit):
-    def __init__(self, unit_id, owner, position, upgrades, direction):
+    def __init__(self, object_id, owner, position, upgrades, direction):
         speed = 2
         trap_wear = 1
         hp = 20
         bounty = 20
-        super().__init__(unit_id, UNIT_RUNNER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+        super().__init__(object_id, UNIT_RUNNER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
         (x, y) = self.position
@@ -91,12 +91,12 @@ class UnitRunner(Unit):
 
 
 class UnitTank(Unit):
-    def __init__(self, unit_id, owner, position, upgrades, direction):
+    def __init__(self, object_id, owner, position, upgrades, direction):
         speed = 5
         trap_wear = 3
         hp = 50
         bounty = 20
-        super().__init__(unit_id, UNIT_TANK, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+        super().__init__(object_id, UNIT_TANK, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
         (x, y) = self.position
@@ -104,12 +104,12 @@ class UnitTank(Unit):
 
 
 class UnitCrookedSoldier(Unit):
-    def __init__(self, unit_id, owner, position, upgrades, direction):
+    def __init__(self, object_id, owner, position, upgrades, direction):
         speed = 5
         trap_wear = 2
         hp = 20
         bounty = 20
-        super().__init__(unit_id, UNIT_CROOKEDSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+        super().__init__(object_id, UNIT_CROOKEDSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
         (x, y) = self.position
@@ -117,7 +117,7 @@ class UnitCrookedSoldier(Unit):
 
 
 class UnitTopStepSoldier(Unit):
-    def __init__(self, unit_id, owner, position, upgrades, direction):
+    def __init__(self, object_id, owner, position, upgrades, direction):
         self.step_counter = 0
         self.step_number = 5
 
@@ -125,7 +125,7 @@ class UnitTopStepSoldier(Unit):
         trap_wear = 2
         hp = 20
         bounty = 20
-        super().__init__(unit_id, UNIT_TOPSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+        super().__init__(object_id, UNIT_TOPSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
         (x, y) = self.position
@@ -139,7 +139,7 @@ class UnitTopStepSoldier(Unit):
 
 
 class UnitBottomStepSoldier(Unit):
-    def __init__(self, unit_id, owner, position, upgrades, direction):
+    def __init__(self, object_id, owner, position, upgrades, direction):
         self.step_counter = 0
         self.step_number = 5
 
@@ -147,7 +147,7 @@ class UnitBottomStepSoldier(Unit):
         trap_wear = 2
         hp = 20
         bounty = 20
-        super().__init__(unit_id, UNIT_BOTTOMSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+        super().__init__(object_id, UNIT_BOTTOMSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
         (x, y) = self.position

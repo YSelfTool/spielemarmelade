@@ -1,31 +1,31 @@
 BUILDING_HQ = 0
 BUILDING_SPAWNER = 1
 
-from game_object import GameObject, Placeable
+from game_object import Placeable
 
 
 class Building(Placeable):
-    def __init__(self, building_id, building_kind, size, owner, position):
-        super().__init__(building_id, building_kind, owner, position, size, [])
+    def __init__(self, object_id, kind, size, owner, position):
+        super().__init__(object_id, kind, owner, position, size, [])
 
     def __repr__(self):
-        return "<Building: Id={}, Kind={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.building_kind, self.size, self.owner, self.position, self.upgrades)
+        return "<Building: Id={}, Kind={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.object_id, self.kind, self.size, self.owner, self.position, self.upgrades)
 
     def equals(self, building):
-        return (self.building_id == building.building_id) and (self.building_kind == building.building_kind) and (self.position == building.position)
+        return (self.object_id == building.object_id) and (self.kind == building.kind) and (self.position == building.position)
 
     def tick(self, player):
         pass
 
 
 class Headquaters(Building):
-    def __init__(self, building_id, owner, position):
+    def __init__(self, object_id, owner, position):
         size = (1, 4)
-        super().__init__(building_id, BUILDING_HQ, size, owner, position)
+        super().__init__(object_id, BUILDING_HQ, size, owner, position)
         self.income_per_tick = 10
 
     def __repr__(self):
-        return "<Headquaters: Id={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.size, self.owner, self.position, self.upgrades)
+        return "<Headquaters: Id={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.object_id, self.size, self.owner, self.position, self.upgrades)
 
     def tick(self, player):
         player.add_money(self.income_per_tick)
@@ -37,16 +37,16 @@ class Headquaters(Building):
 
 
 class Spawner(Building):
-    def __init__(self, building_id, owner, position, mob_kind, num_mobs, cooldown_ticks):
+    def __init__(self, object_id, owner, position, mob_kind, num_mobs, cooldown_ticks):
         size = (1, 1)
-        super().__init__(building_id, BUILDING_SPAWNER, size, owner, position)
+        super().__init__(object_id, BUILDING_SPAWNER, size, owner, position)
         self.mob_kind = mob_kind
         self.num_mobs = num_mobs
         self.cooldown_ticks = cooldown_ticks
         self.current_cooldown = 0
 
     def __repr__(self):
-        return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}, NumMobs={}, CooldownTicks={}, CurrentCooldown={}>".format(self.building_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind, self.num_mobs, self.cooldown_ticks, self.current_cooldown)
+        return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}, NumMobs={}, CooldownTicks={}, CurrentCooldown={}>".format(self.object_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind, self.num_mobs, self.cooldown_ticks, self.current_cooldown)
 
     def equals(self, building):
         return super().equals(building) and \

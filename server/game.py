@@ -57,10 +57,10 @@ def get_placeable_bounds(placeable):
 def get_placeable_bounds_at_position(placeable, position):
     placeable_x_start = position[0]
     placeable_y_start = position[1]
-    placeable_y_start = placeable_x_start + placeable.size[0]
+    placeable_x_stop = placeable_x_start + placeable.size[0]
     placeable_y_stop = placeable_y_start + placeable.size[1]
 
-    return placeable_x_start, placeable_y_start, placeable_y_start, placeable_y_stop
+    return placeable_x_start, placeable_x_stop, placeable_y_start, placeable_y_stop
 
 
 class GameState(object):
@@ -82,8 +82,10 @@ class GameState(object):
                 self.map[x][y] = building
 
     def can_place_building_at(self, building, position):
+        logger.debug("Checking wether we can place a placeable at %s", position)
         (x1, x2, y1, y2) = get_placeable_bounds_at_position(building, position)
         if (x1 < 0) or (x2 > MAP_SIZE_X) or (y1 < 0) or (y1 > MAP_SIZE_Y):  # don't place out of bounds
+            logger.debug("trying to place something out of bounds...")
             return False
 
         can_place = True
@@ -94,6 +96,8 @@ class GameState(object):
                     break
             if not can_place:
                 break
+
+        logger.debug("We can place it? %s", can_place)
         return can_place
 
     def spawn_headquaters(self):
@@ -111,6 +115,7 @@ class GameState(object):
         (x, y) = msg["position"]
         kind = msg["kind"]
         owner = player.player_id
+        logger.debug("%s is trying to spawn spawner", player.name)
         spawner = buildings.Spawner(self.get_next_id(), owner, (x, y), kind, 1, 10)
         if self.can_place_building_at(spawner, (x, y)):
             logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
@@ -158,7 +163,7 @@ class GameState(object):
             elif action == "trigger_spawner":
                 (x, y) = msg["position"]
                 spawner_id = msg["spawner_id"]
-                if isinstance(self.map[x][y], buildings.Spawner) and (self.map[x][y].building_id == spawner_id):
+                if isinstance(self.map[x][y], buildings.Spawner) and (self.map[x][y].object_id == spawner_id):
                     self.trigger_spawner(self.map[x][y], player)
             else:
                 logger.warning("Unknown action %s in action buffer, ignoring.", action)
@@ -202,9 +207,9 @@ class GameState(object):
     def send_state_delta(self, old_state):
         players = []
 
-        new_units, changed_units, deleted_units = get_new_changed_deleted(self.units, old_state["units"], lambda u: u.unit_id)
-        new_traps, changed_traps, deleted_traps = get_new_changed_deleted(self.traps, old_state["traps"], lambda t: t.trap_id)
-        new_buildings, changed_buildings, deleted_buildings = get_new_changed_deleted(self.buildings, old_state["buildings"], lambda b: b.building_id)
+        new_units, changed_units, deleted_units = get_new_changed_deleted(self.units, old_state["units"], lambda u: u.object_id)
+        new_traps, changed_traps, deleted_traps = get_new_changed_deleted(self.traps, old_state["traps"], lambda t: t.object_id)
+        new_buildings, changed_buildings, deleted_buildings = get_new_changed_deleted(self.buildings, old_state["buildings"], lambda b: b.object_id)
 
         (hp, money) = old_state["players"]["player1"]
         if (hp != self.game.player1.health_points) or (money != self.game.player1.money):
