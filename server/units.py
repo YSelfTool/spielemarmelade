@@ -31,7 +31,7 @@ class Unit(object):
         return Unit(self.unit_id, self.unit_kind, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear, self.direction, self.speed, self.speed_counter)
 
     def get_next_position(self):
-        return None
+        pass
 
     def may_move(self):
         move = False
@@ -54,4 +54,8 @@ class Unit(object):
 
 class UnitSolider(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
-        super().__init__(unit_id, UNIT_SOLIDER, owner, position, upgrades, 10, 20, direction, 3)
+        speed = 3
+        super().__init__(unit_id, UNIT_SOLIDER, owner, position, upgrades, 10, 20, direction, speed)
+
+    def get_next_position(self):
+        return (x + direction, y)
