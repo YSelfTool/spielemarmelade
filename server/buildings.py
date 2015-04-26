@@ -51,7 +51,7 @@ class Spawner(Building):
         return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}>".format(self.building_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind)
 
     def equals(self, building):
-        return super.equals(building) and (isinstance(building, Spawner)) and (self.mob_kind == building.mob_kind)
+        return super().equals(building) and (isinstance(building, Spawner)) and (self.mob_kind == building.mob_kind)
 
     def copy(self):
         return Spawner(self.building_id, self.owner, self.position, self.mob_kind)

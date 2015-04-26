@@ -36,9 +36,7 @@ class Trap(object):
 
     def equals(self, trap):
         #TODO if (upgrades):
-        if (trap.durability != self.durability):
-            return False
-        return True
+        return trap.durability != self.durability
 
 
 class PitfallTrap(Trap):
@@ -57,7 +55,7 @@ class PitfallTrap(Trap):
         return PitfallTrap(self.trap_id, self.owner, self.position, self.capacity)
 
     def equals(self, trap):
-        return super.equals(trap) and (self.mobs_in_trap != trap.mobs_in_trap)
+        return super().equals(trap) and (self.mobs_in_trap != trap.mobs_in_trap)
 
     def handle_unit(self, unit, player):
         if self.mobs_in_trap <= self.capacity:
