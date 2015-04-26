@@ -86,7 +86,7 @@ class GameState(object):
             self.place_building_in_map(spawner)
             self.buildings.append(spawner)
 
-    # after each round
+    # update game state
     def tick(self):
         old_state = self.save_game_state()
         the_actions = self.action_buffer.copy()
@@ -160,14 +160,14 @@ class GameState(object):
             players.append(self.game.player2)
 
         return {
-            "changed_units": changed_units,
-            "deleted_units": deleted_units,
-            "new_units": new_units,
-            "changed_traps": changed_traps,
-            "deleted_traps": deleted_traps,
-            "new_traps": new_traps,
-            "new_buildings": new_buildings,
-            "changed_players": players 
+            "changed_units": [unit.to_dict() for unit in changed_units],
+            "deleted_units": [unit.to_dict() for unit in deleted_units],
+            "new_units": [unit.to_dict() for unit in new_units],
+            "changed_traps": [unit.to_dict() for unit in changed_traps],
+            "deleted_traps": [unit.to_dict() for unit in deleted_traps],
+            "new_traps": [unit.to_dict() for unit in new_traps],
+            "new_buildings": [unit.to_dict() for unit in new_buildings],
+            "changed_players": [player.to_dict() for player in players]
         }
 
     def handle_message(self, msg, player):
