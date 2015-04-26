@@ -12,6 +12,7 @@ var currentBuildingSpawnerKind = 0;
 var currentTrapType = 0;
 var buildingcache = [];
 var cache;
+var costs = {};
 
 function draw() {
     if (state == "running")
@@ -84,7 +85,7 @@ function gameStartHandler(data) {
         document.getElementById("lobby-div").style.display = "none";
         player.side = (enemy.side == "left" ? "right" : "left");
         state = "running";
-        showMessage("Mögen die Spiele beginnen.");
+        showMessage("Mögen die Spiele gegen " + enemy.name  + " beginnen.");
         draw();
     }
 }
@@ -187,6 +188,16 @@ function changedGameStateHandler(data) {
     }
 }
 
+function setCostListHandler(data) {
+    costs = {};
+    var d = data.data;
+    console.log(d);
+    for (var i = 0; i < d.length; i++) {
+        var e = d[i];
+        costs[e[0] + "-" + e[1]] = e[2];
+    }
+}
+
 function placeSpawner(pos) {
     var kind = currentBuildingSpawnerKind;
     var b = map.buildingByPos(pos);
@@ -201,21 +212,39 @@ function placeSpawner(pos) {
 }
 
 function placeTrap(pos) {
-    var kind = currentTrapType;
-    network.placeTrap(pos, kind);
-    cache.addTrap(imgloader, kind, pos, player.id);
+    var oldTrap = map.trapByPos(pos);
+    if (oldTrap == null) {
+        var kind = currentTrapType;
+        network.placeTrap(pos, kind);
+        cache.addTrap(imgloader, kind, pos, player.id);
+    } else {
+        showTrapInfo(oldTrap);
+    }
 }
 
 function triggerSpawner(spawner) {
     network.triggerSpawner(spawner.id, spawner.position);
+    showSpawnerInfo(spawner);
 }
 
 function canvasClickHandler(canvasPos) {
     if (state == "running") {
         var mapPos = canvasPos.div(tileSize).floor();
         if (currentlyBuilding == "building") {
-            if (currentBuildingType == BUILDING_SPAWNER && mapPos.x == player.spawnerLane()) {
+            if (currentBuildingKind == BUILDING_SPAWNER && mapPos.x == player.spawnerLane()) {
                 placeSpawner(mapPos);
+            } else {
+                var b = map.buildingByPos(mapPos);
+                if (b != null) {
+                    if (b.kind == BUILDING_SPAWNER) {
+                        showSpawnerInfo(b);
+                    }
+                } else {
+                    var t = map.trapByPos(mapPos);
+                    if (t != null) {
+                        showTrapInfo(t);   
+                    }
+                }
             }
         } else if (currentlyBuilding == "trap") {
             if (mapPos.x >= 2 && mapPos.x < map.size.x - 2)
@@ -223,8 +252,14 @@ function canvasClickHandler(canvasPos) {
         } else {
             if (mapPos.x == player.spawnerLane()) {
                 var b = map.buildingByPos(mapPos);
-                if (b != null)
+                if (b != null) {
                     triggerSpawner(b);
+                }
+            } else if (mapPos.x >= 2 && mapPos.x <= 61) {
+                var t = map.trapByPos(mapPos);
+                if (t != null) {
+                    showTrapInfo(t);
+                }
             }
         }
     }
@@ -244,7 +279,8 @@ window.onload=function() {
             "game_queued": gameQueuedHandler,
             "game_started": gameStartHandler,
             "full_game_state": fullGameStateHandler,
-            "changed_game_state": changedGameStateHandler 
+            "changed_game_state": changedGameStateHandler,
+            "set_cost_table": setCostListHandler
         };
     // ws://134.61.40.201:8765/game
     network = new Network("ws://134.61.40.201:8765/game", executors);
@@ -306,15 +342,16 @@ window.onload=function() {
 window.onclose = quit;
 
 function spawnerBuildingClick(unitKind) {
-    currentBuildingType = BUILDING_SPAWNER;
-    currentBuildingSpawnerType = unitKind;
+    currentBuildingKind = BUILDING_SPAWNER;
+    currentBuildingSpawnerKind = unitKind;
     currentlyBuilding = "building";
-    showSpawnerInfo(unitKind);
+    showSpawnerKindInfo(unitKind);
 }
 
 function trapBuildingClick(trapKind) {
     currentTrapType = trapKind;
     currentlyBuilding = "trap";
+    showTrapKindInfo(trapKind);
 }
 
 function setButtonAndReturnFunc(func, buttonname, inputname) {
@@ -348,7 +385,6 @@ function removeIdsFromArray(array, ids) {
                 remids.push(j);
             }
         }
-        console.log(remids);
         for (var i = remids.length - 1; i >= 0; i--) {
             array.splice(remids[i], 1);
         }

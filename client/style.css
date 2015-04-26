@@ -75,4 +75,11 @@ body {
     /*color: darkgreen;*/
 }
 
+.known-stuff-div div {
+    border-radius: 2px;
+    border: 1px solid black;
+    background-color: grey;
+    padding: 0px;
+    margin: 1px;
+}
 

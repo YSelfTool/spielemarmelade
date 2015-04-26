@@ -136,6 +136,14 @@ Map.prototype.buildingByPos = function(pos) {
     }
     return null;
 }
+Map.prototype.trapByPos = function(pos) {
+    for (var i = 0; i < this.traps.length; i++) {
+        if (this.traps[i].pos.equals(pos)) {
+            return this.traps[i];
+        }
+    }
+    return null;
+}
 Map.prototype.unitById = function(id) {
     for (var i = 0; i < this.units.length; i++) {
         if (this.units[i].id == id) {
@@ -159,4 +167,10 @@ Map.prototype.buildingById = function(id) {
         }
     }
     return null;
+}
+Map.prototype.anyByPos = function(pos) {
+    var b = this.buildingByPos(pos);
+    if (b != null)
+        return b;
+    return this.trapByPos(pos);
 }
