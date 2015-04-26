@@ -28,7 +28,7 @@ class Unit(object):
         }
 
     def copy(self):
-        return Unit(self.unit_id, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear, self.direction)
+        return Unit(self.unit_id, self.unit_type, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear, self.direction, self.speed, self.speed_counter)
 
     def get_next_position(self):
         return None
