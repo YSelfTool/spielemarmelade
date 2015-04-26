@@ -2,7 +2,9 @@ UNIT_SOLIDER = 0
 UNIT_JUMPER = 1
 UNIT_RUNNER = 2
 UNIT_TANK = 3
-Unit_CROOKEDSOLDIER = 4
+UNIT_CROOKEDSOLDIER = 4
+UNIT_TOPSTEPSOLDIER = 5
+UNIT_BOTTOMSTEPSOLDIER = 6
 
 class Unit(object):
     def __init__(self, unit_id, unit_kind, owner, position, upgrades, hp, bounty, trap_wear, direction, speed):
@@ -71,7 +73,7 @@ class UnitSolider(Unit):
 
 class UnitJumper(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
-        speed = 5
+        speed = 8
         trap_wear = 3
         hp = 10
         bounty = 20
@@ -111,8 +113,48 @@ class UnitCrookedSoldier(Unit):
         trap_wear = 2
         hp = 10
         bounty = 20
-        super().__init__(unit_id, Unit_CROOKEDSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+        super().__init__(unit_id, UNIT_CROOKEDSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
     def get_next_position(self):
         (x, y) = self.position
         return (x + self.direction, y + 1)
+
+class UnitTopStepSoldier(Unit):
+    def __init__(self, unit_id, owner, position, upgrades, direction):
+        self.step_counter = 0
+        
+        speed = 5
+        trap_wear = 2
+        hp = 10
+        bounty = 20
+        super().__init__(unit_id, UNIT_TOPSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+
+    def get_next_position(self):
+        (x, y) = self.position
+        new_position = ()
+        self.step_counter += 1
+        if self.step_counter < 5:
+            new_position = (x + self.direction, y)
+        else:
+            self.step_counter = 0
+            new_position = (x, y + 1)
+
+class UnitBottomStepSoldier(Unit):
+    def __init__(self, unit_id, owner, position, upgrades, direction):
+        self.step_counter = 0
+        
+        speed = 5
+        trap_wear = 2
+        hp = 10
+        bounty = 20
+        super().__init__(unit_id, UNIT_BOTTOMSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
+
+    def get_next_position(self):
+        (x, y) = self.position
+        new_position = ()
+        self.step_counter += 1
+        if self.step_counter < 5:
+            new_position = (x + self.direction, y)
+        else:
+            self.step_counter = 0
+            new_position = (x, y - 1)
