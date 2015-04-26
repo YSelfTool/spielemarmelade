@@ -16,7 +16,7 @@ Network.prototype.connect = function() {
         this.network.state = true;
         while (this.network.buffer.length > 0) {
             this.network.send(this.network.buffer[0]);
-            this.network.buffer = this.network.buffer.slice(1);
+            this.network.buffer = this.network.buffer.splice(1);
         }
     };
     this.socket.onerror = function(e) {
@@ -83,8 +83,8 @@ Network.prototype.placeTrap = function(pos, kind) {
     this.fillMsg("place_trap", msg);
     this.send(msg);
 }
-Network.prototype.triggerSpawner = function(id) {
-    msg = { "spawner_id": id };
+Network.prototype.triggerSpawner = function(id, pos) {
+    msg = { "spawner_id": id, "position": pos.toJSON() };
     this.fillMsg("trigger_spawner", msg);
     this.send(msg);
 }
