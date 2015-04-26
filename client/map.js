@@ -71,7 +71,7 @@ Map.prototype.draw = function(ctx, tileSize, imgloader) {
             var existentkinds = [];
             var lastkind = 0;
             for (var i = 0; i < UNIT_TYPE_COUNT; i++) {
-                var tileunitcount = hists[i][x + y * this.size.x] > 0;
+                var tileunitcount = hists[i][x + y * this.size.x];
                 if (tileunitcount > 0) {
                     existentkinds.push(i);
                     typecount += 1;
@@ -82,21 +82,17 @@ Map.prototype.draw = function(ctx, tileSize, imgloader) {
             if (unitcount == 1) {
                 ctx.drawImage(imgloader.get("unit-" + lastkind), x * tileSize, y * tileSize, tileSize, tileSize);
             } else {
-                var insize = Math.ceil(Math.sqrt(typecount*2));
+                var insize = Math.ceil(Math.sqrt(typecount));
                 var typeindex = 0;
-                var locindex = 0;
                 for (var lx = 0; lx < insize; lx++) {
                     for (var ly = 0; ly < insize; ly++) {
                         var locx = x * tileSize + lx * tileSize / insize;
                         var locy = y * tileSize + ly * tileSize / insize;
                         var locSize = tileSize / insize;
-                        if (typeindex * 2 == locindex) {
-                            ctx.drawImage(UnitKindImage(imgloader, existentkinds[typeindex]), locx, locy, locSize, locSize);
-                        } else {
-                            ctx.fillText(hists[existentkinds[typeindex]][x + y * this.size.x], locx, locy, locSize);
-                            typeindex += 1;
-                        }
-                        locindex += 1;
+                        ctx.drawImage(UnitKindImage(imgloader, existentkinds[typeindex]), locx, locy, locSize, locSize);
+                        ctx.fillStyle = "#f00";
+                        ctx.fillText(hists[existentkinds[typeindex]][x + y * this.size.x], locx, locy + locSize, locSize);
+                        typeindex += 1;
                     }
                 }
             }
@@ -113,40 +109,41 @@ Map.prototype.addTrap = function(t) {
     this.traps.push(new Trap(t.id, TrapImage(imgloader, t.kind), t.owner, new Position(t.position[0], t.position[1]), t.kind, t.upgrades, t.durability)); 
 }
 Map.prototype.removeUnits = function(ids) {
-    if (ids.length > 0) {
-        var remids = [];
-        for (var j = 0; j < this.units.length; j++) {
-            if (ids.indexOf(this.units[j].id) != -1) {
-                remids.push(j);
-            }
-        }
-        console.log(remids);
-        for (var i = remids.length - 1; i >= 0; i--) {
-            this.units.splice(remids[i], 1);
-        }
-    }
+    removeIdsFromArray(this.units, ids);
 }
 Map.prototype.removeTraps = function(ids) {
-    if (ids.length > 0) {
-        for (var j = 0; j < this.traps.length; j++) {
-            if (this.traps[j].id in ids) {
-                this.traps.splice(j--, 1);
-            }
-        }
-    }
+    removeIdsFromArray(this.traps, ids);
 }
 Map.prototype.removeBuildings = function(ids) {
-    if (ids.length > 0) {
-        for (var j = 0; j < this.buildings.length; j++) {
-            if (this.buildings[j].id in ids) {
-                this.buildings.splice(j--, 1);
-            }
-        }
-    }
+    removeIdsFromArray(this.buildings, ids);
 }
 Map.prototype.buildingByPos = function(pos) {
     for (var i = 0; i < this.buildings.length; i++) {
         if (this.buildings[i].position.equals(pos)) {
+            return this.buildings[i];
+        }
+    }
+    return null;
+}
+Map.prototype.unitById = function(id) {
+    for (var i = 0; i < this.units.length; i++) {
+        if (this.units[i].id == id) {
+            return this.units[i];
+        }
+    }
+    return null;
+}
+Map.prototype.trapById = function(id) {
+    for (var i = 0; i < this.traps.length; i++) {
+        if (this.traps[i].id == id) {
+            return this.traps[i];
+        }
+    }
+    return null;
+}
+Map.prototype.buildingById = function(id) {
+    for (var i = 0; i < this.buildings.length; i++) {
+        if (this.buildings[i].id == id) {
             return this.buildings[i];
         }
     }
