@@ -142,6 +142,11 @@ def simulate_game(the_game):
     elif player1_still_here:
         asyncio.async(send_error_message(the_game.player1.socket, "Der andere Spieler hat das Spiel verlassen", error_codes. GAME_OVER_PLAYER_QUIT, False))
 
+    if the_game.winner is not None:
+        asyncio.async(send_error_message(the_game.winner.socket, "Du hast Gewonnen", error_codes.GAME_OVER_WON, False))
+    if the_game.loser is not None:
+        asyncio.async(send_error_message(the_game.loser.socket, "Du hast Verloren", error_codes.GAME_OVER_LOST, False))
+
     running_games.pop(the_game.name)
 
 

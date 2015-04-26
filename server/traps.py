@@ -8,14 +8,12 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+from game_object import GameObject, Placeable
 
-class Trap(object):
+
+class Trap(Placeable):
     def __init__(self, trap_id, kind, owner, position, durability, has_durability=True):
-        self.trap_id = trap_id
-        self.kind = kind
-        self.owner = owner
-        self.position = position
-        self.upgrades = []
+        super().__init__(trap_id, kind, owner, position, (1, 1), [])
         self.durability = durability
         self.has_durability = has_durability
 
@@ -23,14 +21,9 @@ class Trap(object):
         return "<Trap: Id={}, Kind={}, Owner={}, Position={}, HasDurability={}, Durability={}".format(self.trap_id, self.kind, self.owner, self.position, self.has_durability, self.durability)
 
     def to_dict(self):
-        return {
-            "id": self.trap_id,
-            "kind": self.kind,
-            "owner": self.owner,
-            "position": [self.position[0], self.position[1]],
-            "upgrades": self.upgrades,
-            "durability": self.durability
-        }
+        d = super().to_dict()
+        d["durability"] = self.durability
+        return d
 
     def handle_unit(self, unit, player):
         pass

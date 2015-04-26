@@ -1,25 +1,12 @@
 BUILDING_HQ = 0
 BUILDING_SPAWNER = 1
 
+from game_object import GameObject, Placeable
 
-class Building(object):
+
+class Building(Placeable):
     def __init__(self, building_id, building_kind, size, owner, position):
-        self.building_id = building_id
-        self.building_kind = building_kind
-        self.size = size
-        self.owner = owner
-        self.position = position
-        self.upgrades = []
-
-    def to_dict(self):
-        return {
-            "id": self.building_id,
-            "kind": self.building_kind,
-            "size": [self.size[0], self.size[1]],
-            "owner": self.owner,
-            "position": [self.position[0], self.position[1]],
-            "upgrades": self.upgrades
-        }
+        super().__init__(building_id, building_kind, owner, position, size, [])
 
     def __repr__(self):
         return "<Building: Id={}, Kind={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.building_kind, self.size, self.owner, self.position, self.upgrades)
@@ -33,7 +20,8 @@ class Building(object):
 
 class Headquaters(Building):
     def __init__(self, building_id, owner, position):
-        super().__init__(building_id, BUILDING_HQ, (1, 4), owner, position)
+        size = (1, 4)
+        super().__init__(building_id, BUILDING_HQ, size, owner, position)
         self.income_per_tick = 10
 
     def __repr__(self):
@@ -50,7 +38,8 @@ class Headquaters(Building):
 
 class Spawner(Building):
     def __init__(self, building_id, owner, position, mob_kind, num_mobs, cooldown_ticks):
-        super().__init__(building_id, BUILDING_SPAWNER, (1, 1), owner, position)
+        size = (1, 1)
+        super().__init__(building_id, BUILDING_SPAWNER, size, owner, position)
         self.mob_kind = mob_kind
         self.num_mobs = num_mobs
         self.cooldown_ticks = cooldown_ticks
