@@ -11,5 +11,5 @@ function Unit(id, player, pos, kind, upgrades, health, bounty, trapwear) {
 }
 
 function UnitKindImage(imgloader, kind) {
-    return imgloader.get("tile-red");
+    return imgloader.get("unit-" + kind);
 }
