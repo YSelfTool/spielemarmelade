@@ -6,6 +6,7 @@ UNIT_CROOKEDSOLDIER = 4
 UNIT_TOPSTEPSOLDIER = 5
 UNIT_BOTTOMSTEPSOLDIER = 6
 
+
 class Unit(object):
     def __init__(self, unit_id, unit_kind, owner, position, upgrades, hp, bounty, trap_wear, direction, speed):
         self.unit_id = unit_id
@@ -59,6 +60,7 @@ class Unit(object):
             return False
         return True
 
+
 class UnitSolider(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         speed = 5
@@ -70,6 +72,7 @@ class UnitSolider(Unit):
     def get_next_position(self):
         (x, y) = self.position
         return (x + self.direction, y)
+
 
 class UnitJumper(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
@@ -83,6 +86,7 @@ class UnitJumper(Unit):
         (x, y) = self.position
         return (x + (2 * self.direction), y)
 
+
 class UnitRunner(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         speed = 2
@@ -94,6 +98,7 @@ class UnitRunner(Unit):
     def get_next_position(self):
         (x, y) = self.position
         return (x + self.direction, y)
+
 
 class UnitTank(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
@@ -107,6 +112,7 @@ class UnitTank(Unit):
         (x, y) = self.position
         return (x + self.direction, y)
 
+
 class UnitCrookedSoldier(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         speed = 5
@@ -118,6 +124,7 @@ class UnitCrookedSoldier(Unit):
     def get_next_position(self):
         (x, y) = self.position
         return (x + self.direction, y + 1)
+
 
 class UnitTopStepSoldier(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
@@ -141,6 +148,7 @@ class UnitTopStepSoldier(Unit):
             new_position = (x, y + 1)
         return new_position
 
+
 class UnitBottomStepSoldier(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         self.step_counter = 0
@@ -154,6 +162,7 @@ class UnitBottomStepSoldier(Unit):
 
     def get_next_position(self):
         (x, y) = self.position
+
         new_position = ()
         self.step_counter += 1
         if self.step_counter < step_number:
@@ -162,3 +171,13 @@ class UnitBottomStepSoldier(Unit):
             self.step_counter = 0
             new_position = (x, y - 1)
         return new_position
+
+lookup = {
+    UNIT_SOLIDER: UnitSolider,
+    UNIT_JUMPER: UnitJumper,
+    UNIT_RUNNER: UnitRunner,
+    UNIT_TANK: UnitTank,
+    UNIT_CROOKEDSOLDIER: UnitCrookedSoldier,
+    UNIT_TOPSTEPSOLDIER: UnitTopStepSoldier,
+    UNIT_BOTTOMSTEPSOLDIER: UnitBottomStepSoldier
+}
