@@ -142,7 +142,6 @@ class GameState(object):
     def send_state_delta(self, old_state):
         changed_units = []
         changed_traps = []
-        changed_buildings = []
         players = []
 
         old_units = old_state["units"]
@@ -170,9 +169,14 @@ class GameState(object):
                     changed_traps.append(trap)                    
 
         old_buildings = old_state["buildings"]
-        new_buildings = [building for building in self.buildings if building not in old_buildings]
-        print("old_buildings:",old_buildings)
-        print("new_buildings:",new_buildings)
+        new_buildings = []
+
+        old_building_id_max = 0
+        for old_building in old_buildings:
+            if old_building.building_id > old_building_id_max:
+                old_building_id_max = old_building.building_id
+
+        new_buildings = [building for building in self.buildings if building.building_id > old_building_id_max]
 
         (hp, money) = old_state["players"]["player1"]
         if (hp != self.game.player1.health_points) or (money != self.game.player1.money):
