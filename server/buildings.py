@@ -53,20 +53,23 @@ class Spawner(Building):
         self.mob_kind = mob_kind
         self.num_mobs = num_mobs
         self.cooldown_ticks = cooldown_ticks
-        self.current_cooldown = cooldown_ticks
+        self.current_cooldown = 0
 
     def __repr__(self):
-        return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}, NumMobs={}, CooldownTicks={}>".format(self.building_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind, self.num_mobs, self.cooldown_ticks)
+        return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}, NumMobs={}, CooldownTicks={}, CurrentCooldown={}>".format(self.building_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind, self.num_mobs, self.cooldown_ticks, self.current_cooldown)
 
     def equals(self, building):
         return super().equals(building) and \
-               isinstance(building, Spawner) and \
-               (self.mob_kind == building.mob_kind) and \
-               (self.num_mobs == building.num_mobs) and \
-               (self.cooldown_ticks == building.cooldown_ticks)
+            isinstance(building, Spawner) and \
+            (self.mob_kind == building.mob_kind) and \
+            (self.num_mobs == building.num_mobs) and \
+            (self.cooldown_ticks == building.cooldown_ticks) and \
+            (self.current_cooldown == building.current_cooldown)
 
     def copy(self):
-        return Spawner(self.building_id, self.owner, self.position, self.mob_kind, self.num_mobs, self.cooldown_ticks)
+        s = Spawner(self.building_id, self.owner, self.position, self.mob_kind, self.num_mobs, self.cooldown_ticks)
+        s.current_cooldown = self.current_cooldown
+        return s
 
     def to_dict(self):
         d = super().to_dict()

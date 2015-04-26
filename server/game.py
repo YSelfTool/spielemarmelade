@@ -95,7 +95,7 @@ class GameState(object):
         (x, y) = msg["position"]
         kind = msg["kind"]
         owner = player.player_id
-        spawner = buildings.Spawner(self.get_next_building_id(), owner, (x, y), kind)
+        spawner = buildings.Spawner(self.get_next_building_id(), owner, (x, y), kind, 1, 10)
         if self.can_place_building_at(spawner, (x, y)):
             logger.info("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(spawner)
@@ -112,10 +112,12 @@ class GameState(object):
             self.traps.append(trap)
 
     def trigger_spawner(self, spawner, player):
+        logger.info("Player %s triggered a spawner for mob kind %d at %s", player.name, spawner.mob_kind, spawner.position)
         if not spawner.can_spawn():
+            logger.info("Spawner is still in cooldown. %d ticks left", spawner.current_cooldown)
             return
         spawner.reset_cooldown()
-        mob_pos = spawner.position
+        mob_pos = [spawner.position[0], spawner.position[1]]
         mob_pos[0] += player.direction
         for n in range(spawner.num_mobs):
             mob = units.lookup[spawner.mob_kind](self.get_next_unit_id(), player.player_id, mob_pos, [], player.direction)
@@ -183,6 +185,7 @@ class GameState(object):
                 old_unit = old_unit[0]
                 if not unit.equals(old_unit):
                     changed_units.append(unit)
+
 
         previous_state_traps = old_state["traps"]
         trap_to_id = lambda trap: trap.trap_id
