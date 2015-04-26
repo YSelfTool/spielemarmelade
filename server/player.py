@@ -10,6 +10,7 @@ class Player(object):
         self.socket = socket
         self.money = 0
         self.health_points = 20
+        self.direction = None  # 1 = left , -1=right
         pass
 
     def __repr__(self):
@@ -25,5 +26,5 @@ class Player(object):
         return {
             "id": self.player_id,
             "hp": self.health_points,
-            "money": money 
+            "money": self.money
         }

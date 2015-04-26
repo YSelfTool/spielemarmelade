@@ -6,6 +6,7 @@ logger.setLevel(logging.INFO)
 
 import buildings
 import traps
+import units
 
 MAP_SIZE_X = 32
 MAP_SIZE_Y = 16
@@ -66,6 +67,8 @@ class GameState(object):
 
     def can_place_building_at(self, building, position):
         (x1, x2, y1, y2) = self.get_building_bounds_at_position(building, position)
+        if (x1 < 0) or (x2 > MAP_SIZE_X) or (y1 < 0) or (y1 > MAP_SIZE_Y):  # don't place out of bounds
+            return False
 
         can_place = True
         for x in range(x1, x2):
@@ -80,8 +83,10 @@ class GameState(object):
     def spawn_headquaters(self):
         hq_player1 = buildings.Headquaters(self.get_next_building_id(), self.game.player1.player_id, (0, int(MAP_SIZE_Y/2-2)))
         self.buildings.append(hq_player1)
+        logger.info("Spawning headquaters for player %s in map at %s", self.game.player1.name, hq_player1.position)
         hq_player2 = buildings.Headquaters(self.get_next_building_id(), self.game.player2.player_id, (MAP_SIZE_X-1, int(MAP_SIZE_Y/2-2)))
         self.buildings.append(hq_player2)
+        logger.info("Spawning headquaters for player %s in map at %s", self.game.player2.name, hq_player2.position)
 
         self.place_building_in_map(hq_player1)
         self.place_building_in_map(hq_player2)
@@ -92,7 +97,7 @@ class GameState(object):
         owner = player.player_id
         spawner = buildings.Spawner(self.get_next_building_id(), owner, (x, y), kind)
         if self.can_place_building_at(spawner, (x, y)):
-            logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
+            logger.info("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(spawner)
             self.buildings.append(spawner)
 
@@ -102,9 +107,19 @@ class GameState(object):
         owner = player.player_id
         trap = traps.lookup[kind](self.get_next_trap_id(), owner, (x, y))
         if self.can_place_building_at(trap, (x, y)):
-            logger.debug("Spawning trap of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
+            logger.info("Spawning trap of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(trap)
             self.traps.append(trap)
+
+    def trigger_spawner(self, spawner, player):
+        if not spawner.can_spawn():
+            return
+        spawner.reset_cooldown()
+        mob_pos = spawner.position
+        mob_pos[0] += player.direction
+        for n in range(spawner.num_mobs):
+            mob = units.lookup[spawner.mob_kind](self.get_next_unit_id(), player.player_id, mob_pos, [], player.direction)
+            self.units.append(mob)
 
     # update game state
     def tick(self):
@@ -121,6 +136,11 @@ class GameState(object):
                 self.spawn_spawner(msg, player)
             elif action == "place_trap":
                 self.spawn_trap(msg, player)
+            elif action == "trigger_spawner":
+                (x, y) = msg["position"]
+                spawner_id = msg["spawner_id"]
+                if isinstance(self.map[x][y], buildings.Spawner) and (self.map[x][y].building_id == spawner_id):
+                    self.trigger_spawner(self.map[x][y], player)
             else:
                 logger.warning("Unknown action %s in action buffer, ignoring.", action)
                 continue
@@ -144,33 +164,49 @@ class GameState(object):
         changed_traps = []
         players = []
 
-        old_units = old_state["units"]
-        new_units = [unit for unit in self.units if unit not in old_units]
-        deleted_units = [unit for unit in old_units if unit not in self.units]
+        previous_state_units = old_state["units"]
+        old_units_id_max = 0
+        for old_unit in previous_state_units:
+            if old_unit.unit_id > old_units_id_max:
+                old_units_id_max = previous_state_units.unit_id
+
+        unit_to_id = lambda unit: unit.unit_id
+        current_state_unit_ids = map(unit_to_id, self.units)
+        previous_state_unit_ids = map(unit_to_id, previous_state_units)
+        new_units = list(filter(lambda unit: unit.unit_id not in previous_state_unit_ids, self.units))
+        deleted_units = list(filter(lambda unit: unit.unit_id not in current_state_unit_ids, previous_state_units))
 
         for unit in self.units:
             unit_id = unit.unit_id
-            old_unit = [unit for unit in old_units if unit.unit_id == unit_id]
+            old_unit = [unit for unit in previous_state_units if unit.unit_id == unit_id]
             if len(old_unit) == 1:
                 old_unit = old_unit[0]
                 if not unit.equals(old_unit):
                     changed_units.append(unit)
 
-        old_traps = old_state["traps"]
-        new_traps = [trap for trap in self.traps if trap not in old_traps]
-        deleted_traps = [trap for trap in old_traps if trap not in self.traps]
+        previous_state_traps = old_state["traps"]
+        trap_to_id = lambda trap: trap.trap_id
+        current_trap_ids = map(trap_to_id, self.traps)
+        previous_state_trap_ids = map(trap_to_id, previous_state_traps)
+        new_traps = list(filter(lambda trap: trap.trap_id not in previous_state_trap_ids, self.traps))
+        deleted_traps = list(filter(lambda trap: trap.trap_id not in current_trap_ids, previous_state_traps))
 
-        for trap in self.traps:
+        new_trap_ids = map(trap_to_id, new_traps)
+        deleted_trap_ids = map(trap_to_id, deleted_traps)
+        candidate_trap_filter = lambda trap: (trap.trap_id not in new_trap_ids) or (trap.trap_id not in deleted_trap_ids)
+        candidate_traps = list(filter(candidate_trap_filter, self.traps))
+
+        for trap in candidate_traps:
             trap_id = trap.trap_id
-            old_trap = [trap for trap in old_traps if trap.trap_id == trap_id]
+            old_trap = [trap for trap in previous_state_traps if trap.trap_id == trap_id]
             if len(old_trap) == 1:
                 old_trap = old_trap[0]
                 if not trap.equals(old_trap):
-                    changed_traps.append(trap)                    
+                    changed_traps.append(trap)
+            else:
+                logger.debug("More than one trap with the same id found. Wat. (%s)", old_trap)
 
         old_buildings = old_state["buildings"]
-        new_buildings = []
-
         old_building_id_max = 0
         for old_building in old_buildings:
             if old_building.building_id > old_building_id_max:
@@ -193,23 +229,22 @@ class GameState(object):
             "new_units": [unit.to_dict() for unit in new_units],
             "changed_traps": [unit.to_dict() for unit in changed_traps],
             "deleted_traps": [unit.to_dict() for unit in deleted_traps],
-            "new_traps": [unit.to_dict() for unit in new_traps],
+            "new_traps": [trap.to_dict() for trap in new_traps],
             "new_buildings": [unit.to_dict() for unit in new_buildings],
             "changed_players": [player.to_dict() for player in players]
         }
 
     def handle_message(self, msg, player):
-        ok = False
+        ok_actions = ["place_spawner", "place_trap", "trigger_spawner"]
         action = msg["action"]
         logger.debug("Handeling message with action %s for player %s ", action, player.name)
-        if action == "place_spawner":
-            ok = True
-        elif action == "place_trap":
-            ok = True
+        ok = action in ok_actions
 
         if ok:
             logger.debug("Placing message from player %s in buffer for next tick", player.name)
             self.action_buffer.append((msg, player))
+        else:
+            logger.info("Unknown action %s from player %s", action, player.name)
         return ok
 
     def get_next_unit_id(self):

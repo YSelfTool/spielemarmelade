@@ -13,7 +13,7 @@ import game
 
 logging.basicConfig(format='%(asctime)s %(name)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 ws_logger = logging.getLogger('websockets.server')
 ws_logger.setLevel(logging.DEBUG)
@@ -94,6 +94,8 @@ def handle_join_game(msg, socket, player):
         player_id_to_game[the_game.player2.player_id] = the_game
         the_game_state = game.GameState(the_game)
         the_game.state = the_game_state
+        the_game.player1.direction = 1 # left side
+        the_game.player2.direction = -1 # right side
         asyncio.async(simulate_game(the_game))
     else:
         logger.info("Player %s started a new game called %s", player.name, game_name)
@@ -123,7 +125,7 @@ def simulate_game(the_game):
     logger.info("Now simulating the game name %s", the_game.name)
     the_game.state.send_full_state()
     while the_game.running:
-        #logger.debug("Updating game named %s", the_game.name)
+        logger.debug("Updating game named %s", the_game.name)
         the_game.state.tick()
         yield from asyncio.sleep(0.5)
         # yield from asyncio.sleep(5)
@@ -183,7 +185,7 @@ def handle_message(websocket, path):
             the_player = handle_set_name(msg, websocket, the_token)
             if the_player is not None:
                 asyncio.async(send_player_id(websocket, the_player))
-                logger.debug("Added player %s", the_player)
+                logger.info("New player %s", the_player)
         elif action == "quit":
             logger.info("Client is quitting")
             websocket.close()

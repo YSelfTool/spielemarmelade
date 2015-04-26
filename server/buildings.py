@@ -30,6 +30,8 @@ class Building(object):
     def equals(self, building):
         return (self.id == building.id) and (self.building_kind == building.building_kind) and (self.position == building.position)
 
+    def tick(self, player):
+        pass
 
 class Headquaters(Building):
     def __init__(self, building_id, owner, position):
@@ -41,22 +43,44 @@ class Headquaters(Building):
     def copy(self):
         return Headquaters(self.building_id, self.owner, self.position)
 
+    def tick(self, player):
+        player.add_money(10)
+
 
 class Spawner(Building):
-    def __init__(self, building_id, owner, position, mob_kind):
+    def __init__(self, building_id, owner, position, mob_kind, num_mobs, cooldown_ticks):
         super().__init__(building_id, BUILDING_SPAWNER, (1, 1), owner, position)
         self.mob_kind = mob_kind
+        self.num_mobs = num_mobs
+        self.cooldown_ticks = cooldown_ticks
+        self.current_cooldown = cooldown_ticks
 
     def __repr__(self):
-        return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}>".format(self.building_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind)
+        return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}, NumMobs={}, CooldownTicks={}>".format(self.building_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind, self.num_mobs, self.cooldown_ticks)
 
     def equals(self, building):
-        return super().equals(building) and (isinstance(building, Spawner)) and (self.mob_kind == building.mob_kind)
+        return super().equals(building) and \
+               isinstance(building, Spawner) and \
+               (self.mob_kind == building.mob_kind) and \
+               (self.num_mobs == building.num_mobs) and \
+               (self.cooldown_ticks == building.cooldown_ticks)
 
     def copy(self):
-        return Spawner(self.building_id, self.owner, self.position, self.mob_kind)
+        return Spawner(self.building_id, self.owner, self.position, self.mob_kind, self.num_mobs, self.cooldown_ticks)
 
     def to_dict(self):
         d = super().to_dict()
         d["mob_kind"] = self.mob_kind
         return d
+
+    def tick(self, player):
+        self.current_cooldown -= 1
+        if self.current_cooldown < 0:
+            self.current_cooldown = 0
+
+    def can_spawn(self):
+        return self.current_cooldown == 0
+
+    def reset_cooldown(self):
+        self.current_cooldown = self.cooldown_ticks
+
