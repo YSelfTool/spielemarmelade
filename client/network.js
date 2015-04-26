@@ -26,6 +26,7 @@ Network.prototype.connect = function() {
         this.state = false;
         console.log(e);
         console.log("Connection closed");
+        alert("Spiel vorbei, Verbindung zu!");
     };
     this.socket.onmessage = function(e) {
         this.network.parse(e.data);

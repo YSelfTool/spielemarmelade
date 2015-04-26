@@ -8,7 +8,7 @@ function Trap(id, img, player, pos, kind, upgrades, durability) {
     this.upgrades = upgrades;
     this.durability = durability;
 }
-Trap.prototype.draw = function(ctx, tileSize, imgloader) {
+Trap.prototype.draw = function(ctx, tileSize, imgloader, pl) {
     ctx.drawImage(this.img, this.pos.x * tileSize, this.pos.y * tileSize, tileSize, tileSize);
 };
 
