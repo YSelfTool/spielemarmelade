@@ -36,10 +36,10 @@ class Unit(object):
         self.position = position
 
     def equals(self, unit):
-        if (unit.position != self.position):
+        if unit.position != self.position:
             return False
         #TODO if (upgrades):
-        if (unit.hp != self.hp):
+        if unit.hp != self.hp:
             return False
         return True
 

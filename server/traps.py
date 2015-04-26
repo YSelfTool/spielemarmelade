@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class Trap(object):
-    def __init__(self, trap_id, trap_type, owner, position, durability, has_durability=True):
+    def __init__(self, trap_id, kind, owner, position, durability, has_durability=True):
         self.trap_id = trap_id
-        self.trap_type = trap_type
+        self.kind = kind
         self.owner = owner
         self.position = position
         self.upgrades = []
@@ -21,7 +21,7 @@ class Trap(object):
     def to_dict(self):
         return {
             "id": self.trap_id,
-            "type": self.trap_type,
+            "kind": self.kind,
             "owner": self.owner,
             "position": [self.position[0], self.position[1]],
             "upgrades": self.upgrades,
@@ -29,7 +29,7 @@ class Trap(object):
         }
 
     def copy(self):
-        return Trap(self.trap_id, self.trap_type, self.owner, self.position, self.durability, self.has_durability)
+        return Trap(self.trap_id, self.kind, self.owner, self.position, self.durability, self.has_durability)
 
     def handle_unit(self, unit, player):
         pass
