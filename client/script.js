@@ -282,9 +282,7 @@ window.onload=function() {
             "changed_game_state": changedGameStateHandler,
             "set_cost_table": setCostListHandler
         };
-    // ws://134.61.40.201:8765/game
-    network = new Network("ws://134.61.40.201:8765/game", executors);
-    //network = new Network("ws://localhost:8765/game", "trapstrat", executors);
+    network = new Network("ws://linewars.steckdo.se/", executors);
     network.connect();
     setButtonAndReturnFunc(login, "login-button", "login-name");
     setButtonAndReturnFunc(joinGame, "lobby-button", "lobby-name");
