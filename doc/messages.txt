@@ -20,9 +20,6 @@ message client->server:
     "token": "$token",
     "position": [x, y],
     "kind": "$mobname"
-    "spawner": {
-        "pattern": "$patternname"
-    }
 }
 
 {
@@ -79,6 +76,7 @@ message server->client:
     "enemy": {
         enemy_player_id: $enemy_player_id,
         enemy_player_name: $enemy_player_name
+        enemy_side: left/right
     } 
 }
 
@@ -122,6 +120,7 @@ trap:
     "upgrades": [ ],
     "kind": kind,
     "durability": durability,
+    "has_durability": True, // kann kaputt gehen
 }
 
 building:

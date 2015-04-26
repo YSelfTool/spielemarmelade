@@ -2,8 +2,10 @@ import json
 import asyncio
 import logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 import buildings
+import traps
 
 MAP_SIZE_X = 64
 MAP_SIZE_Y = 32
@@ -29,18 +31,41 @@ class GameState(object):
         self.action_buffer = []
         self.spawn_headquaters()
 
-    def place_building_in_map(self, building):
+    def get_building_bounds(self, building):
         building_x_start = building.position[0]
         building_x_stop = building_x_start+building.size[0]
         building_y_start = building.position[1]
         building_y_stop = building_y_start+building.size[1]
 
-        for x in range(building_x_start, building_x_stop):
-            for y in range(building_y_start, building_y_stop):
+        return building_x_start, building_x_stop, building_y_start, building_y_stop
+
+    def get_building_bounds_at_position(self, building, position):
+        building_x_start = position[0]
+        building_x_stop = building_x_start+building.size[0]
+        building_y_start = position[1]
+        building_y_stop = building_y_start+building.size[1]
+
+        return building_x_start, building_x_stop, building_y_start, building_y_stop
+
+    def place_building_in_map(self, building):
+        (x1, x2, y1, y2) = self.get_building_bounds(building)
+
+        for x in range(x1, x2):
+            for y in range(y1, y2):
                 self.map[x][y] = building
 
     def can_place_building_at(self, building, position):
-        return True # TODO: Actually implement this
+        (x1, x2, y1, y2) = self.get_building_bounds_at_position(building, position)
+
+        can_place = True
+        for x in range(x1, x2):
+            for y in range(y1, y2):
+                if self.map[x][y] is not None:
+                    can_place = False
+                    break
+            if not can_place:
+                break
+        return can_place
 
     def spawn_headquaters(self):
         hq_player1 = buildings.Headquaters(self.game.player1.player_id, (0, int(MAP_SIZE_Y/2-2)))
@@ -51,17 +76,36 @@ class GameState(object):
         self.place_building_in_map(hq_player1)
         self.place_building_in_map(hq_player2)
 
-    # after each round
+    def spawn_spawner(self, msg, player):
+        (x, y) = msg["position"]
+        kind = msg["kind"]
+        owner = player.player_id
+        spawner = buildings.Spawner(owner, (x, y), kind)
+        if self.can_place_building_at(spawner, (x, y)):
+            logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
+            self.place_building_in_map(spawner)
+            self.buildings.append(spawner)
 
+    # update game state
     def tick(self):
         old_state = self.save_game_state()
         the_actions = self.action_buffer.copy()
         self.action_buffer = []
 
-        self.send_state_delta()
+        self.move_units()
 
+        for (msg, player) in the_actions:
+            action = msg["action"]
+            if action == "place_spawner":
+                self.spawn_spawner(msg, player)
+            else:
+                logger.warning("Unknown action %s in action buffer, ignoring.", action)
+                continue
 
-    #beginning state
+        self.apply_field_effects()
+        self.send_state_delta(old_state)
+
+    # initial state
     def send_full_state(self):
         self.do_send_data({
             "action": "full_game_state",
@@ -72,11 +116,71 @@ class GameState(object):
         })
 
     # changes after each tick
-    def send_state_delta(self):
-        pass
+    def send_state_delta(self, old_state):
+        changed_units = []
+        changed_traps = []
+        changed_buildings = []
+        players = []
 
-    def handle_message(self, msg):
-        self.action_buffer.append(msg)
+        old_units = old_state["units"]
+        new_units = [unit for unit in self.units if unit not in old_units]
+        deleted_units = [unit for unit in old_units if unit not in self.units]
+
+        for unit in self.units:
+            unit_id = unit.unit_id
+            old_unit = [unit for unit in old_units if unit.unit_id == unit_id]
+            if (len(old_unit) == 1):
+                old_unit = old_unit[0]
+                if (not unit.equals(old_unit)):
+                    changed_units.append(unit)
+
+        old_traps = old_state["traps"]
+        new_traps = [trap for trap in self.traps if trap not in old_traps]
+        deleted_traps = [trap for trap in old_traps if trap not in self.traps]
+
+        for trap in self.traps:
+            trap_id = trap.trap_id
+            old_trap = [trap for trap in old_traps if trap.trap_id == trap_id]
+            if (len(old_trap) == 1):
+                old_trap = old_trap[0]
+                if (not trap.equals(old_trap)):
+                    changed_traps.append(trap)                    
+
+        old_buildings = old_state["buildings"]
+        new_buildings = [building for building in self.buildings if building not in old_buildings]
+
+        (hp, money) = old_state["players"]["player1"]
+        if (hp != self.game.player1.health_points 
+            or money != self.game.player1.money)
+            players.append(self.game.player1)
+
+        (hp, money) = old_state["players"]["player2"]
+        if (hp != self.game.player2.health_points 
+            or money != self.game.player2.money)
+            players.append(self.game.player2)
+
+        return {
+            "changed_units": [unit.to_dict() for unit in changed_units],
+            "deleted_units": [unit.to_dict() for unit in deleted_units],
+            "new_units": [unit.to_dict() for unit in new_units],
+            "changed_traps": [unit.to_dict() for unit in changed_traps],
+            "deleted_traps": [unit.to_dict() for unit in deleted_traps],
+            "new_traps": [unit.to_dict() for unit in new_traps],
+            "new_buildings": [unit.to_dict() for unit in new_buildings],
+            "changed_players": [player.to_dict() for player in players]
+        }
+
+    def handle_message(self, msg, player):
+        ok = False
+        action = msg["action"]
+        logger.debug("Handeling message with action %s for player %s ", action, player.name)
+        if action == "place_spawner":
+            ok = True
+
+        if ok:
+            logger.debug("Placing message from player %s in buffer for next tick", player.name)
+            self.action_buffer.append((msg, player))
+        return ok
 
     def get_next_unit_id(self):
         tmp = self.unit_id_counter
@@ -99,3 +203,41 @@ class GameState(object):
         json_str = json.dumps(data)
         asyncio.async(self.game.player1.socket.send(json_str))
         asyncio.async(self.game.player2.socket.send(json_str))
+
+    def move_units(self):
+        for unit in self.units:
+            if unit.may_move():
+                (x, y) = unit.get_next_position()
+                (ox, oy) = unit.position
+                if (1 <= x < MAP_SIZE_X-1) and (0 <= y < MAP_SIZE_Y):
+                    unit.set_new_position([x, y])
+                if y == -1:
+                    y += MAP_SIZE_Y
+                    unit.set_new_position([x, y])
+                elif y == MAP_SIZE_Y:
+                    y -= MAP_SIZE_Y
+                    unit.set_new_position([x, y])
+
+    def apply_field_effects(self):
+        for unit in self.units:
+            (x, y) = unit.position
+            if (unit.player == self.game.player1.player_id) and (x == MAP_SIZE_X-2):
+                self.game.player2.add_money(unit.bounty)
+                self.game.player2.lose_health_points()
+                self.units.remove(unit)
+            elif (unit.player == self.game.player2.player_id) and (x == 1):
+                self.game.player1.add_money(unit.bounty)
+                self.game.player1.lose_health_points()
+                self.units.remove(unit)
+            else:
+                trap = self.map[x][y]
+                if trap is not None:
+                    trap.handleUnit(unit)
+                    if unit.hp <= 0:
+                        self.units.remove(unit)
+                    if trap.has_durability and trap.durability <= 0:
+                        self.traps.remove(trap)
+                        self.map[x][y] = None
+                    elif isinstance(trap, traps.PitfallTrap) and (trap.mobs_in_trap == trap.capacity):
+                        self.traps.remove(trap)
+                        self.map[x][y] = None

@@ -43,8 +43,8 @@ def send_game_queued(socket, game_name):
     yield from socket.send(json.dumps(data))
 
 
-def send_game_started(socket, enemy):
-    data = {"action": "game_started", "enemy": {"enemy_id": enemy.player_id, "enemy_name": enemy.name}}
+def send_game_started(socket, enemy, enemy_side):
+    data = {"action": "game_started", "enemy": {"enemy_id": enemy.player_id, "enemy_name": enemy.name, "enemy_side": enemy_side}}
     yield from socket.send(json.dumps(data))
 
 
@@ -88,8 +88,8 @@ def handle_join_game(msg, socket, player):
         running_games[game_name] = the_game
         waiting_games.pop(game_name)
         logger.info("Staring game %s with %s and %s", the_game.name, the_game.player1.name, the_game.player2.name)
-        asyncio.async(send_game_started(the_game.player1.socket, the_game.player2))
-        asyncio.async(send_game_started(the_game.player2.socket, the_game.player1))
+        asyncio.async(send_game_started(the_game.player1.socket, the_game.player2, "right"))
+        asyncio.async(send_game_started(the_game.player2.socket, the_game.player1, "left"))
         player_id_to_game[the_game.player1.player_id] = the_game
         player_id_to_game[the_game.player2.player_id] = the_game
         the_game_state = game.GameState(the_game)
@@ -123,9 +123,8 @@ def simulate_game(the_game):
     logger.info("Now simulating the game name %s", the_game.name)
     the_game.state.send_full_state()
     while the_game.running:
-        logger.debug("Updating game named %s", the_game.name)
+        #logger.debug("Updating game named %s", the_game.name)
         the_game.state.tick()
-        the_game.state.send_state_delta()
         yield from asyncio.sleep(0.5)
     logger.info("The game named %s is done", the_game.name)
     player1_still_here = the_game.player1.player_id in player_id_to_game
@@ -141,9 +140,7 @@ def simulate_game(the_game):
     elif player1_still_here:
         asyncio.async(send_error_message(the_game.player1.socket, "Der andere Spieler hat das Spiel verlassen", error_codes. GAME_OVER_PLAYER_QUIT, False))
 
-
-def handle_game_message(the_game, msg):
-    return the_game.state.handle_message(msg)
+    running_games.pop(the_game.name)
 
 
 @asyncio.coroutine
@@ -195,9 +192,18 @@ def handle_message(websocket, path):
         elif action == "join_game":
             handle_join_game(msg, websocket, the_player)
         else:
-            the_game = player_id_to_game[the_player]
-            if (the_game is not None) and (handle_game_message(the_game, msg)):
-                pass
+            if the_player.player_id in player_id_to_game:
+                the_game = player_id_to_game[the_player.player_id]
+                #logger.debug("Player %s has a game named %s", the_player.name, the_game.name)
+                if the_game is not None:
+                    if the_game.state.handle_message(msg, the_player):
+                        #logger.info("The game handled action %s for player %s", msg["action"], the_player.name)
+                        pass
+                    #else:
+                        #logger.error("Game %s for player %s did not handle action %s", the_game.name, the_player.name, msg["action"])
+                #else:
+                    #logger.error("There is no game for the player name %s", the_player.name)
+
             else:
                 logger.error("Unknown action {} ", str(action))
 

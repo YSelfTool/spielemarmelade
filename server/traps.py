@@ -1,13 +1,14 @@
-TRAP_PITFALL = 1
+TRAP_PITFALL = 0
 
 
 class Trap(object):
-    def __init__(self, trap_id, owner, position, durability):
+    def __init__(self, trap_id, owner, position, durability, has_durability=True):
         self.trap_id = trap_id
         self.owner = owner
         self.position = position
         self.upgrades = []
         self.durability = durability
+        self.has_durability = has_durability
 
     def to_dict(self):
         return {
@@ -21,9 +22,20 @@ class Trap(object):
     def copy(self):
         return Trap(self.trap_id, self.owner, self.position, self.durability)
 
+    def handle_unit(self, unit):
+        pass
+
+    def equals(self, trap):
+        if (trap.position != self.position):
+            return False
+        #TODO if (upgrades):
+        if (trap.durability != self.durability):
+            return False
+        return True
+
 class PitfallTrap(Trap):
     def __init__(self, owner, position, capacity):
-        super().__init__(TRAP_PITFALL, owner, position, -1)
+        super().__init__(TRAP_PITFALL, owner, position, -1, False)
         self.capacity = capacity
         self.mobs_in_trap = 0
 
@@ -32,3 +44,8 @@ class PitfallTrap(Trap):
         d["capacity"] = self.capacity
         d["mobs_in_trap"] = self.mobs_in_trap
         return d
+
+    def handle_unit(self, unit):
+        if self.mobs_in_trap <= self.capacity:
+            self.mobs_in_trap += 1
+            unit.hp = 0
