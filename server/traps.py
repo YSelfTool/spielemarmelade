@@ -106,10 +106,10 @@ class CatapultTrap(Trap):
         unit.hp -= 1
         (x, y) = unit.position
         new_x = x - (unit.direction * self.range)
-        if (unit.direction == -1) and (new_x < 2):
-            new_x = 2
-        elif (unit.direction == 1) and (new_x > game.MAP_SIZE_X-3):
+        if (unit.direction == -1) and (new_x > game.MAP_SIZE_X-3):
             new_x = game.MAP_SIZE_X-3
+        elif (unit.direction == 1) and (new_x < 2):
+            new_x = 2
 
         unit.position[0] = new_x
 
