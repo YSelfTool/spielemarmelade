@@ -46,7 +46,8 @@ class Spawner(Building):
         self.cooldown_ticks = cooldown_ticks
         self.current_cooldown = 0
         self.spawned_units = 0
-        _, _, self.money_per_tick = cost_lookup[units.lookup[self.mob_kind]] * 0.01
+        _, _, self.money_per_tick = cost_lookup[units.lookup[self.mob_kind]]
+        self.money_per_tick *= 0.01
 
     def __repr__(self):
         return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}, NumMobs={}, CooldownTicks={}, CurrentCooldown={}>".format(self.object_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind, self.num_mobs, self.cooldown_ticks, self.current_cooldown)

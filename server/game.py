@@ -28,6 +28,10 @@ class Game(object):
         self.loser = None
 
 
+def clamp(the_min, the_value, the_max):
+    return max(the_min, min(the_max, the_value))
+
+
 def get_new_changed_deleted(current, previous, id_lambda):
     current_state_ids = list(map(id_lambda, current))
     previous_state_ids = list(map(id_lambda, previous))
@@ -82,7 +86,7 @@ class GameState(object):
             for y in range(y1, y2):
                 self.map[x][y] = building
 
-    def can_place_building_at(self, building, position):
+    def can_place_building_at(self, building, position, player):
         logger.debug("Checking wether we can place a placeable at %s", position)
         (x1, x2, y1, y2) = get_placeable_bounds_at_position(building, position)
         if (x1 < 0) or (x2 > MAP_SIZE_X) or (y1 < 0) or (y1 > MAP_SIZE_Y):  # don't place out of bounds
@@ -97,6 +101,22 @@ class GameState(object):
                     break
             if not can_place:
                 break
+
+        if can_place:
+            can_place = False
+            spawn_radius_check_x1 = clamp(0, x1 - PLACEMENT_RADIUS_IN_TILES, MAP_SIZE_X - 1)
+            spawn_radius_check_x2 = clamp(spawn_radius_check_x1, x2 + PLACEMENT_RADIUS_IN_TILES, MAP_SIZE_X - 1)
+            spawn_radius_check_y1 = clamp(0, y1 - PLACEMENT_RADIUS_IN_TILES, MAP_SIZE_Y - 1)
+            spawn_radius_check_y2 = clamp(spawn_radius_check_y1, y2 + PLACEMENT_RADIUS_IN_TILES, MAP_SIZE_Y - 1)
+
+            for x in range(spawn_radius_check_x1, spawn_radius_check_x2+1):
+                for y in range(spawn_radius_check_y1, spawn_radius_check_y2+1):
+                    tile = self.map[x][y]
+                    can_place = (tile is not None) and (tile.owner == player.player_id)
+                    if can_place:
+                        break
+                if can_place:
+                        break
 
         logger.debug("We can place it? %s", can_place)
         return can_place
@@ -118,7 +138,7 @@ class GameState(object):
         owner = player.player_id
         logger.debug("%s is trying to spawn spawner", player.name)
         spawner = buildings.Spawner(self.get_next_id(), owner, (x, y), kind, 1, 10)
-        if self.can_place_building_at(spawner, (x, y)) and self.pay_for(player, spawner):
+        if self.can_place_building_at(spawner, (x, y), player) and self.pay_for(player, spawner):
             logger.debug("Spawning spawner of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(spawner)
             self.buildings.append(spawner)
@@ -128,7 +148,7 @@ class GameState(object):
         kind = msg["kind"]
         owner = player.player_id
         trap = traps.lookup[kind](self.get_next_id(), owner, (x, y))
-        if self.can_place_building_at(trap, (x, y)) and self.pay_for(player, trap):
+        if self.can_place_building_at(trap, (x, y), player) and self.pay_for(player, trap):
             logger.debug("Spawning trap of kind %d for player %s in map at (%d,%d)", kind, player.name, x, y)
             self.place_building_in_map(trap)
             self.traps.append(trap)
