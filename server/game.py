@@ -148,33 +148,49 @@ class GameState(object):
         changed_traps = []
         players = []
 
-        old_units = old_state["units"]
-        new_units = [unit for unit in self.units if unit not in old_units]
-        deleted_units = [unit for unit in old_units if unit not in self.units]
+        previous_state_units = old_state["units"]
+        old_units_id_max = 0
+        for old_unit in previous_state_units:
+            if old_unit.unit_id > old_units_id_max:
+                old_units_id_max = previous_state_units.unit_id
+
+        unit_to_id = lambda unit: unit.unit_id
+        current_state_unit_ids = map(unit_to_id, self.units)
+        previous_state_unit_ids = map(unit_to_id, previous_state_units)
+        new_units = list(filter(lambda unit: unit.unit_id not in previous_state_unit_ids, self.units))
+        deleted_units = list(filter(lambda unit: unit.unit_id not in current_state_unit_ids, previous_state_units))
 
         for unit in self.units:
             unit_id = unit.unit_id
-            old_unit = [unit for unit in old_units if unit.unit_id == unit_id]
+            old_unit = [unit for unit in previous_state_units if unit.unit_id == unit_id]
             if len(old_unit) == 1:
                 old_unit = old_unit[0]
                 if not unit.equals(old_unit):
                     changed_units.append(unit)
 
-        old_traps = old_state["traps"]
-        new_traps = [trap for trap in self.traps if trap not in old_traps]
-        deleted_traps = [trap for trap in old_traps if trap not in self.traps]
+        previous_state_traps = old_state["traps"]
+        trap_to_id = lambda trap: trap.trap_id
+        current_trap_ids = map(trap_to_id, self.traps)
+        previous_state_trap_ids = map(trap_to_id, previous_state_traps)
+        new_traps = list(filter(lambda trap: trap.trap_id not in previous_state_trap_ids, self.traps))
+        deleted_traps = list(filter(lambda trap: trap.trap_id not in current_trap_ids, previous_state_traps))
 
-        for trap in self.traps:
+        new_trap_ids = map(trap_to_id, new_traps)
+        deleted_trap_ids = map(trap_to_id, deleted_traps)
+        candidate_trap_filter = lambda trap: (trap.trap_id not in new_trap_ids) or (trap.trap_id not in deleted_trap_ids)
+        candidate_traps = list(filter(candidate_trap_filter, self.traps))
+
+        for trap in candidate_traps:
             trap_id = trap.trap_id
-            old_trap = [trap for trap in old_traps if trap.trap_id == trap_id]
+            old_trap = [trap for trap in previous_state_traps if trap.trap_id == trap_id]
             if len(old_trap) == 1:
                 old_trap = old_trap[0]
                 if not trap.equals(old_trap):
-                    changed_traps.append(trap)                    
+                    changed_traps.append(trap)
+            else:
+                logger.debug("More than one trap with the same id found. Wat. (%s)", old_trap)
 
         old_buildings = old_state["buildings"]
-        new_buildings = []
-
         old_building_id_max = 0
         for old_building in old_buildings:
             if old_building.building_id > old_building_id_max:
@@ -197,23 +213,22 @@ class GameState(object):
             "new_units": [unit.to_dict() for unit in new_units],
             "changed_traps": [unit.to_dict() for unit in changed_traps],
             "deleted_traps": [unit.to_dict() for unit in deleted_traps],
-            "new_traps": [unit.to_dict() for unit in new_traps],
+            "new_traps": [trap.to_dict() for trap in new_traps],
             "new_buildings": [unit.to_dict() for unit in new_buildings],
             "changed_players": [player.to_dict() for player in players]
         }
 
     def handle_message(self, msg, player):
-        ok = False
+        ok_actions = ["place_spawner", "place_trap", "trigger_spawner"]
         action = msg["action"]
         logger.debug("Handeling message with action %s for player %s ", action, player.name)
-        if action == "place_spawner":
-            ok = True
-        elif action == "place_trap":
-            ok = True
+        ok = action in ok_actions
 
         if ok:
             logger.debug("Placing message from player %s in buffer for next tick", player.name)
             self.action_buffer.append((msg, player))
+        else:
+            logger.info("Unknown action %s from player %s", action, player.name)
         return ok
 
     def get_next_unit_id(self):
