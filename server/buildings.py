@@ -28,14 +28,16 @@ class Building(object):
         return "<Building: Id={}, Kind={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.building_kind, self.size, self.owner, self.position, self.upgrades)
 
     def equals(self, building):
-        return (self.id == building.id) and (self.building_kind == building.building_kind) and (self.position == building.position)
+        return (self.building_id == building.building_id) and (self.building_kind == building.building_kind) and (self.position == building.position)
 
     def tick(self, player):
         pass
 
+
 class Headquaters(Building):
     def __init__(self, building_id, owner, position):
         super().__init__(building_id, BUILDING_HQ, (1, 4), owner, position)
+        self.income_per_tick = 10
 
     def __repr__(self):
         return "<Headquaters: Id={}, Size={}, Owner={}, Position={}, Upgrades=[]>".format(self.building_id, self.size, self.owner, self.position, self.upgrades)
@@ -44,7 +46,12 @@ class Headquaters(Building):
         return Headquaters(self.building_id, self.owner, self.position)
 
     def tick(self, player):
-        player.add_money(10)
+        player.add_money(self.income_per_tick)
+
+    def to_dict(self):
+        d = super().to_dict()
+        d["income_per_tick"] = self.income_per_tick
+        return d
 
 
 class Spawner(Building):
@@ -53,24 +60,29 @@ class Spawner(Building):
         self.mob_kind = mob_kind
         self.num_mobs = num_mobs
         self.cooldown_ticks = cooldown_ticks
-        self.current_cooldown = cooldown_ticks
+        self.current_cooldown = 0
 
     def __repr__(self):
-        return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}, NumMobs={}, CooldownTicks={}>".format(self.building_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind, self.num_mobs, self.cooldown_ticks)
+        return "<Spawner: Id={}, Owner={}, Position={}, Upgrades=[], MobKind={}, NumMobs={}, CooldownTicks={}, CurrentCooldown={}>".format(self.building_id, self.size, self.owner, self.position, self.upgrades, self.mob_kind, self.num_mobs, self.cooldown_ticks, self.current_cooldown)
 
     def equals(self, building):
         return super().equals(building) and \
-               isinstance(building, Spawner) and \
-               (self.mob_kind == building.mob_kind) and \
-               (self.num_mobs == building.num_mobs) and \
-               (self.cooldown_ticks == building.cooldown_ticks)
+            isinstance(building, Spawner) and \
+            (self.mob_kind == building.mob_kind) and \
+            (self.num_mobs == building.num_mobs) and \
+            (self.cooldown_ticks == building.cooldown_ticks) and \
+            (self.current_cooldown == building.current_cooldown)
 
     def copy(self):
-        return Spawner(self.building_id, self.owner, self.position, self.mob_kind, self.num_mobs, self.cooldown_ticks)
+        s = Spawner(self.building_id, self.owner, self.position, self.mob_kind, self.num_mobs, self.cooldown_ticks)
+        s.current_cooldown = self.current_cooldown
+        return s
 
     def to_dict(self):
         d = super().to_dict()
         d["mob_kind"] = self.mob_kind
+        d["cooldown_ticks"] = self.cooldown_ticks
+        d["current_cooldown"] = self.current_cooldown
         return d
 
     def tick(self, player):

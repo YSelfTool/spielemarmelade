@@ -34,7 +34,9 @@ class Unit(object):
         }
 
     def copy(self):
-        return Unit(self.unit_id, self.unit_kind, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear, self.direction, self.speed, self.speed_counter)
+        u = Unit(self.unit_id, self.unit_kind, self.owner, self.position.copy(), self.upgrades.copy(), self.hp, self.bounty, self.trap_wear, self.direction, self.speed)
+        u.speed_counter = self.speed_counter
+        return u
 
     def get_next_position(self):
         pass
@@ -65,7 +67,7 @@ class UnitSolider(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         speed = 5
         trap_wear = 2
-        hp = 10
+        hp = 20
         bounty = 20
         super().__init__(unit_id, UNIT_SOLIDER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
@@ -78,7 +80,7 @@ class UnitJumper(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         speed = 8
         trap_wear = 3
-        hp = 10
+        hp = 20
         bounty = 20
         super().__init__(unit_id, UNIT_JUMPER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
@@ -91,7 +93,7 @@ class UnitRunner(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         speed = 2
         trap_wear = 1
-        hp = 10
+        hp = 20
         bounty = 20
         super().__init__(unit_id, UNIT_RUNNER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
@@ -104,7 +106,7 @@ class UnitTank(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         speed = 5
         trap_wear = 3
-        hp = 30
+        hp = 50
         bounty = 20
         super().__init__(unit_id, UNIT_TANK, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
@@ -117,7 +119,7 @@ class UnitCrookedSoldier(Unit):
     def __init__(self, unit_id, owner, position, upgrades, direction):
         speed = 5
         trap_wear = 2
-        hp = 10
+        hp = 20
         bounty = 20
         super().__init__(unit_id, UNIT_CROOKEDSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
@@ -133,7 +135,7 @@ class UnitTopStepSoldier(Unit):
 
         speed = 5
         trap_wear = 2
-        hp = 10
+        hp = 20
         bounty = 20
         super().__init__(unit_id, UNIT_TOPSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
@@ -156,7 +158,7 @@ class UnitBottomStepSoldier(Unit):
 
         speed = 5
         trap_wear = 2
-        hp = 10
+        hp = 20
         bounty = 20
         super().__init__(unit_id, UNIT_BOTTOMSTEPSOLDIER, owner, position, upgrades, hp, bounty, trap_wear, direction, speed)
 
