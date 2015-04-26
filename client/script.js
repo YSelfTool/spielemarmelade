@@ -114,7 +114,6 @@ function fullGameStateHandler(data) {
 
 function changedGameStateHandler(data) {
     cache.clear();
-    console.log(data);
     if (state == "running") {
         for (var i = 0; i < data.new_units.length; i++) {
             map.addUnit(data.new_units[i]);
@@ -129,23 +128,57 @@ function changedGameStateHandler(data) {
         for (var i = 0; i < data.deleted_units.length; i++) {
             unitIdsToDelete.push(data.deleted_units[i].id);
         }
-        for (var i = 0; i < data.changed_units.length; i++) {
-            unitIdsToDelete.push(data.changed_units[i].id);
-        }
         map.removeUnits(unitIdsToDelete);
         var trapIdsToDelete = [];
         for (var i = 0; i < data.deleted_traps.length; i++) {
             trapIdsToDelete.push(data.deleted_traps[i].id);
         }
-        for (var i = 0; i < data.changed_traps.length; i++) {
-            trapIdsToDelete.push(data.changed_traps[i].id);
-        }
-        //map.removeTraps(trapIdsToDelete);
+        map.removeTraps(trapIdsToDelete);
         for (var i = 0; i < data.changed_units.length; i++) {
-            map.addUnit(data.changed_units[i]);
+            var u = data.changed_units[i];
+            var unit = map.unitById(u.id);
+            if (unit != null) {
+                unit.kind = u.kind;
+                unit.player = u.owner;
+                unit.position = new Position(u.position[0], u.position[1]);
+                unit.upgrades = u.upgrades;
+                unit.health = u.hp;
+                unit.bounty = u.bounty;
+                unit.trapwear = u.wear;
+            } else {
+                console.log("Trying to change invalid unit!");
+                console.log(u);
+            }
         }
         for (var i = 0; i < data.changed_traps.length; i++) {
-            map.addTrap(data.changed_traps[i]);
+            var t = data.changed_traps[i];
+            var trap = map.trapById(t.id);
+            if (trap != null) {
+                trap.kind = t.kind;
+                trap.player = t.owner;
+                trap.pos = new Position(t.position[0], t.position[1]);
+                trap.upgrades = t.upgrades;
+                trap.durability = t.durability;
+            }
+        }
+        for (var i = 0; i < data.changed_buildings.length; i++) {
+            var b = data.changed_buildings[i];
+            var building = map.buildingById(b.id);
+            if (building != null) {
+                building.kind = b.kind;
+                building.size = new Position(b.size[0], b.size[1]);
+                building.player = b.owner;
+                building.position = new Position(b.position[0], b.position[1]);
+                building.upgrades = b.upgrades;
+            }
+        }
+        for (var i = 0; i < data.changed_players.length; i++) {
+            var p = data.changed_players[i];
+            var pl = playerById(p.id);
+            if (pl != null) {
+                pl.hp = p.hp;
+                pl.money = p.money;
+            }
         }
     }
 }
@@ -281,4 +314,28 @@ function showError(msg) {
 function showInfo(title, content) {
     document.getElementById("infospace-title").innerHTML = title;
     document.getElementById("infospace-content").innerHTML = content;
+}
+
+function removeIdsFromArray(array, ids) {
+    if (ids.length > 0) {
+        console.log("Trying to remove " + ids.length + " things");
+        var remids = [];
+        console.log(ids);
+        for (var j = 0; j < array.length; j++) {
+            if (ids.indexOf(array[j].id) != -1) {
+                remids.push(j);
+            }
+        }
+        console.log(remids);
+        for (var i = remids.length - 1; i >= 0; i--) {
+            console.log("removing thing");
+            array.splice(remids[i], 1);
+        }
+    }
+}
+
+function playerById(id) {
+    if (id == player.id)
+        return player;
+    return enemy;
 }
